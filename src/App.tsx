@@ -3,9 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AppLayout } from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import ProcessDetails from "./pages/ProcessDetails";
 import RecordDetails from "./pages/RecordDetails";
+import CreateProcess from "./pages/CreateProcess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -17,8 +19,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/process/:id" element={<ProcessDetails />} />
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="process/:id" element={<ProcessDetails />} />
+            <Route path="create-process" element={<CreateProcess />} />
+          </Route>
           <Route path="/record/:id" element={<RecordDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

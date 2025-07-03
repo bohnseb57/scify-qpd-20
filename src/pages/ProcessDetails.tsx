@@ -173,25 +173,23 @@ export default function ProcessDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="bg-gradient-subtle min-h-full">
       <div className="border-b bg-background/95 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/')}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">{process.name}</h1>
-                <p className="text-muted-foreground">{process.description}</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{process.name}</h1>
+              <p className="text-muted-foreground">{process.description}</p>
             </div>
             <div className="flex gap-2">
               <Dialog open={showCreateRecord} onOpenChange={setShowCreateRecord}>
                 <DialogTrigger asChild>
-                  <Button variant="hero">
-                    <Plus className="h-4 w-4" />
-                    New Record
+                  <Button 
+                    onClick={() => setShowCreateRecord(true)}
+                    className="bg-gradient-primary hover:bg-primary-hover transition-smooth"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Record
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -236,15 +234,15 @@ export default function ProcessDetails() {
                 </DialogContent>
               </Dialog>
               <Button variant="outline">
-                <Settings className="h-4 w-4" />
-                Configure
+                <Settings className="h-4 w-4 mr-2" />
+                Configure Process
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="p-6 space-y-8">
         {/* Process Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="shadow-card">

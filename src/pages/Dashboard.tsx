@@ -162,23 +162,19 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="bg-gradient-subtle min-h-full">
       <div className="border-b bg-background/95 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Quality Process Designer 2.0</h1>
-              <p className="text-muted-foreground">Modern QMS for Life Sciences</p>
-            </div>
-            <Button variant="hero" onClick={() => setShowProcessWizard(true)}>
-              <Plus className="h-4 w-4" />
-              New Process
-            </Button>
+        <div className="px-6 py-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Quality Process Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Overview of your quality processes and recent activity
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="p-6 space-y-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="shadow-card">
