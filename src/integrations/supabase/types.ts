@@ -9,7 +9,308 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      process_fields: {
+        Row: {
+          created_at: string
+          display_order: number
+          field_label: string
+          field_name: string
+          field_options: Json | null
+          field_type: Database["public"]["Enums"]["field_type"]
+          id: string
+          is_required: boolean
+          process_id: string
+          validation_rules: Json | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          field_label: string
+          field_name: string
+          field_options?: Json | null
+          field_type: Database["public"]["Enums"]["field_type"]
+          id?: string
+          is_required?: boolean
+          process_id: string
+          validation_rules?: Json | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          field_label?: string
+          field_name?: string
+          field_options?: Json | null
+          field_type?: Database["public"]["Enums"]["field_type"]
+          id?: string
+          is_required?: boolean
+          process_id?: string
+          validation_rules?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_fields_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      process_records: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          created_by: string
+          current_status: Database["public"]["Enums"]["workflow_status"]
+          current_step_id: string | null
+          id: string
+          process_id: string
+          record_title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by: string
+          current_status?: Database["public"]["Enums"]["workflow_status"]
+          current_step_id?: string | null
+          id?: string
+          process_id: string
+          record_title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          created_by?: string
+          current_status?: Database["public"]["Enums"]["workflow_status"]
+          current_step_id?: string | null
+          id?: string
+          process_id?: string
+          record_title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_records_current_step_id_fkey"
+            columns: ["current_step_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_records_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      processes: {
+        Row: {
+          ai_suggestion: string | null
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          ai_suggestion?: string | null
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          ai_suggestion?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      record_field_values: {
+        Row: {
+          created_at: string
+          field_id: string
+          field_value: string | null
+          id: string
+          record_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          field_value?: string | null
+          id?: string
+          record_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          field_value?: string | null
+          id?: string
+          record_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "record_field_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "process_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "record_field_values_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "process_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          email: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          email: string
+          full_name: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workflow_history: {
+        Row: {
+          action: string
+          comments: string | null
+          from_step_id: string | null
+          id: string
+          performed_at: string
+          performed_by: string
+          record_id: string
+          to_step_id: string | null
+        }
+        Insert: {
+          action: string
+          comments?: string | null
+          from_step_id?: string | null
+          id?: string
+          performed_at?: string
+          performed_by: string
+          record_id: string
+          to_step_id?: string | null
+        }
+        Update: {
+          action?: string
+          comments?: string | null
+          from_step_id?: string | null
+          id?: string
+          performed_at?: string
+          performed_by?: string
+          record_id?: string
+          to_step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_history_from_step_id_fkey"
+            columns: ["from_step_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_history_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "process_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_history_to_step_id_fkey"
+            columns: ["to_step_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_steps: {
+        Row: {
+          can_approve: boolean
+          can_reject: boolean
+          created_at: string
+          id: string
+          process_id: string
+          required_role: Database["public"]["Enums"]["user_role"]
+          step_name: string
+          step_order: number
+        }
+        Insert: {
+          can_approve?: boolean
+          can_reject?: boolean
+          created_at?: string
+          id?: string
+          process_id: string
+          required_role: Database["public"]["Enums"]["user_role"]
+          step_name: string
+          step_order: number
+        }
+        Update: {
+          can_approve?: boolean
+          can_reject?: boolean
+          created_at?: string
+          id?: string
+          process_id?: string
+          required_role?: Database["public"]["Enums"]["user_role"]
+          step_name?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_steps_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +319,27 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      field_type:
+        | "text"
+        | "textarea"
+        | "number"
+        | "date"
+        | "select"
+        | "checkbox"
+        | "email"
+        | "url"
+      user_role:
+        | "admin"
+        | "quality_manager"
+        | "quality_reviewer"
+        | "initiator"
+        | "qa_final_approver"
+      workflow_status:
+        | "draft"
+        | "in_progress"
+        | "approved"
+        | "rejected"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +454,31 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      field_type: [
+        "text",
+        "textarea",
+        "number",
+        "date",
+        "select",
+        "checkbox",
+        "email",
+        "url",
+      ],
+      user_role: [
+        "admin",
+        "quality_manager",
+        "quality_reviewer",
+        "initiator",
+        "qa_final_approver",
+      ],
+      workflow_status: [
+        "draft",
+        "in_progress",
+        "approved",
+        "rejected",
+        "completed",
+      ],
+    },
   },
 } as const
