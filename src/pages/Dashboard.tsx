@@ -74,7 +74,7 @@ export default function Dashboard() {
           name: processData.name,
           description: processData.description,
           ai_suggestion: "AI suggested these fields based on process best practices",
-          created_by: "demo-user" // In real app, use auth.uid()
+          created_by: "00000000-0000-0000-0000-000000000000" // Demo UUID - in real app, use auth.uid()
         })
         .select()
         .single();
