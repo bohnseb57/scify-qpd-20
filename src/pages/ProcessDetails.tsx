@@ -95,7 +95,7 @@ export default function ProcessDetails() {
         .insert({
           process_id: id,
           record_title: newRecordTitle,
-          created_by: "demo-user", // In real app, use auth.uid()
+          created_by: "00000000-0000-0000-0000-000000000000", // Demo UUID
           current_status: 'draft'
         })
         .select()
