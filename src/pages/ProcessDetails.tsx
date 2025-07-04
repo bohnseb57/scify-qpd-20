@@ -22,6 +22,7 @@ export default function ProcessDetails() {
   const [process, setProcess] = useState<Process | null>(null);
   const [records, setRecords] = useState<ProcessRecord[]>([]);
   const [fields, setFields] = useState<ProcessField[]>([]);
+  const [recordTitles, setRecordTitles] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateRecord, setShowCreateRecord] = useState(false);
   const [newRecordTitle, setNewRecordTitle] = useState("");
@@ -68,6 +69,27 @@ export default function ProcessDetails() {
         console.error('Error loading records:', recordsError);
       } else {
         setRecords(recordsData || []);
+        
+        // Load Title field values for records if we have records
+        if (recordsData && recordsData.length > 0) {
+          const titleField = (fieldsData || []).find(f => f.field_label === 'Title');
+          if (titleField) {
+            const recordIds = recordsData.map(r => r.id);
+            const { data: titleValues } = await supabase
+              .from('record_field_values')
+              .select('record_id, field_value')
+              .eq('field_id', titleField.id)
+              .in('record_id', recordIds);
+            
+            if (titleValues) {
+              const titleMap: Record<string, string> = {};
+              titleValues.forEach(tv => {
+                titleMap[tv.record_id] = tv.field_value || '';
+              });
+              setRecordTitles(titleMap);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('Process details load error:', error);
@@ -275,17 +297,19 @@ export default function ProcessDetails() {
                   <TableRow>
                     <TableHead>ID</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Title</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {records.map(record => <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50">
+                   {records.map(record => <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-medium">{record.record_title}</TableCell>
                       <TableCell>
                         <StatusBadge status={record.current_status} />
                       </TableCell>
+                      <TableCell>{recordTitles[record.id] || '-'}</TableCell>
                       <TableCell>{new Date(record.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>Demo User</TableCell>
                       <TableCell>
