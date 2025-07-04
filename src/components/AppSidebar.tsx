@@ -143,9 +143,9 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => navigate('/settings')} isActive={isActive('/settings')}>
+                <SidebarMenuButton onClick={() => navigate('/process-config')} isActive={isActive('/process-config')}>
                   <Settings className="h-4 w-4" />
-                  {!collapsed && <span>Settings</span>}
+                  {!collapsed && <span>Manage Processes</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

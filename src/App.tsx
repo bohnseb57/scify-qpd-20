@@ -8,6 +8,9 @@ import Dashboard from "./pages/Dashboard";
 import ProcessDetails from "./pages/ProcessDetails";
 import RecordDetails from "./pages/RecordDetails";
 import CreateProcess from "./pages/CreateProcess";
+import ProcessConfigurationList from "./pages/ProcessConfigurationList";
+import ProcessConfiguration from "./pages/ProcessConfiguration";
+import ProcessFieldsConfiguration from "./pages/ProcessFieldsConfiguration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +26,9 @@ const App = () => (
             <Route index element={<Dashboard />} />
             <Route path="process/:id" element={<ProcessDetails />} />
             <Route path="create-process" element={<CreateProcess />} />
+            <Route path="process-config" element={<ProcessConfigurationList />} />
+            <Route path="process-config/:id" element={<ProcessConfiguration />} />
+            <Route path="process-config/:id/fields" element={<ProcessFieldsConfiguration />} />
           </Route>
           <Route path="/record/:id" element={<RecordDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

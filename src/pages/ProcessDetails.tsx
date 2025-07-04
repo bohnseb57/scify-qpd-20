@@ -219,10 +219,6 @@ export default function ProcessDetails() {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button variant="outline">
-                <Settings className="h-4 w-4 mr-2" />
-                Configure Process
-              </Button>
             </div>
           </div>
         </div>
