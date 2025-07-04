@@ -273,19 +273,21 @@ export default function ProcessDetails() {
               </div> : <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
+                    <TableHead>Record</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Title</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {records.map(record => <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50">
-                      <TableCell className="font-medium">{record.record_title}</TableCell>
+                  {records.map((record, index) => <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50">
+                      <TableCell className="font-medium">#{index + 1}</TableCell>
                       <TableCell>
                         <StatusBadge status={record.current_status} />
                       </TableCell>
+                      <TableCell className="font-medium">{record.record_title}</TableCell>
                       <TableCell>{new Date(record.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>Demo User</TableCell>
                       <TableCell>
