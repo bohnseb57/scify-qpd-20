@@ -109,7 +109,7 @@ export function AppSidebar() {
 
         {/* Process Types */}
         <SidebarGroup>
-          <SidebarGroupLabel>Process Types</SidebarGroupLabel>
+          <SidebarGroupLabel>Quality Processes</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {processes.length === 0 ? <div className="px-2 py-4 text-sm text-muted-foreground">
