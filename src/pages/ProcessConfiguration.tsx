@@ -151,6 +151,13 @@ export default function ProcessConfiguration() {
                 Manage Fields
               </Button>
               <Button
+                variant="outline"
+                onClick={() => navigate(`/process-config/${id}/workflow`)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Configure Workflow
+              </Button>
+              <Button
                 onClick={handleSave}
                 disabled={isSaving}
                 className="bg-gradient-primary hover:bg-primary-hover transition-smooth"

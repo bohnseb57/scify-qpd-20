@@ -145,6 +145,14 @@ export default function ProcessConfigurationList() {
                             <Edit className="h-4 w-4" />
                             Fields
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/process-config/${process.id}/workflow`)}
+                          >
+                            <Settings className="h-4 w-4" />
+                            Workflow
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>

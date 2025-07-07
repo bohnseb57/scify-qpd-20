@@ -11,6 +11,7 @@ import CreateProcess from "./pages/CreateProcess";
 import ProcessConfigurationList from "./pages/ProcessConfigurationList";
 import ProcessConfiguration from "./pages/ProcessConfiguration";
 import ProcessFieldsConfiguration from "./pages/ProcessFieldsConfiguration";
+import ProcessWorkflowConfiguration from "./pages/ProcessWorkflowConfiguration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="process-config" element={<ProcessConfigurationList />} />
             <Route path="process-config/:id" element={<ProcessConfiguration />} />
             <Route path="process-config/:id/fields" element={<ProcessFieldsConfiguration />} />
+            <Route path="process-config/:id/workflow" element={<ProcessWorkflowConfiguration />} />
           </Route>
           <Route path="/record/:id" element={<RecordDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
