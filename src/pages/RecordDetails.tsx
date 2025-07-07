@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Clock, User, Edit } from "lucide-react";
+import { ArrowLeft, FileText, Clock, User, Edit, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProcessRecord, Process, ProcessField, RecordFieldValue } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +18,8 @@ export default function RecordDetails() {
   const [fields, setFields] = useState<ProcessField[]>([]);
   const [fieldValues, setFieldValues] = useState<RecordFieldValue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (id) {
@@ -92,6 +96,77 @@ export default function RecordDetails() {
     return fieldValue?.field_value || '';
   };
 
+  const handleEditClick = () => {
+    const initialValues: Record<string, string> = {};
+    fields.forEach(field => {
+      initialValues[field.id] = getFieldValue(field.id);
+    });
+    setEditValues(initialValues);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditValues({});
+  };
+
+  const handleSaveEdit = async () => {
+    if (!record) return;
+
+    try {
+      // Update or insert field values
+      for (const field of fields) {
+        const newValue = editValues[field.id] || '';
+        const existingValue = fieldValues.find(fv => fv.field_id === field.id);
+
+        if (existingValue) {
+          // Update existing value
+          const { error } = await supabase
+            .from('record_field_values')
+            .update({ field_value: newValue })
+            .eq('id', existingValue.id);
+
+          if (error) {
+            console.error('Error updating field value:', error);
+            toast.error('Failed to update field value');
+            return;
+          }
+        } else if (newValue) {
+          // Insert new value if it doesn't exist and has a value
+          const { error } = await supabase
+            .from('record_field_values')
+            .insert({
+              record_id: record.id,
+              field_id: field.id,
+              field_value: newValue
+            });
+
+          if (error) {
+            console.error('Error inserting field value:', error);
+            toast.error('Failed to insert field value');
+            return;
+          }
+        }
+      }
+
+      // Reload the data
+      await loadRecordDetails();
+      setIsEditing(false);
+      setEditValues({});
+      toast.success('Record updated successfully');
+    } catch (error) {
+      console.error('Error saving record:', error);
+      toast.error('Failed to save record');
+    }
+  };
+
+  const handleFieldChange = (fieldId: string, value: string) => {
+    setEditValues(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-subtle p-6">
@@ -135,10 +210,23 @@ export default function RecordDetails() {
             </div>
             <div className="flex gap-2">
               <StatusBadge status={record.current_status} />
-              <Button variant="outline">
-                <Edit className="h-4 w-4" />
-                Edit Record
-              </Button>
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={handleSaveEdit}>
+                    <Save className="h-4 w-4" />
+                    Save Changes
+                  </Button>
+                  <Button variant="ghost" onClick={handleCancelEdit}>
+                    <X className="h-4 w-4" />
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" onClick={handleEditClick}>
+                  <Edit className="h-4 w-4" />
+                  Edit Record
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -218,10 +306,32 @@ export default function RecordDetails() {
                         )}
                       </div>
                       <div className="text-muted-foreground">
-                        {value ? (
-                          <span className="text-foreground">{value}</span>
+                        {isEditing ? (
+                          field.field_type === 'textarea' ? (
+                            <Textarea
+                              value={editValues[field.id] || ''}
+                              onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                              placeholder={`Enter ${field.field_label.toLowerCase()}`}
+                              className="mt-1"
+                            />
+                          ) : (
+                            <Input
+                              type={field.field_type === 'number' ? 'number' : 
+                                    field.field_type === 'date' ? 'date' :
+                                    field.field_type === 'email' ? 'email' :
+                                    field.field_type === 'url' ? 'url' : 'text'}
+                              value={editValues[field.id] || ''}
+                              onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                              placeholder={`Enter ${field.field_label.toLowerCase()}`}
+                              className="mt-1"
+                            />
+                          )
                         ) : (
-                          <span className="italic">No value entered</span>
+                          value ? (
+                            <span className="text-foreground">{value}</span>
+                          ) : (
+                            <span className="italic">No value entered</span>
+                          )
                         )}
                       </div>
                     </div>
