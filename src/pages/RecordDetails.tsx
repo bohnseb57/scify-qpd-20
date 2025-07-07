@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/StatusBadge";
-import { ProcessRecord, Process, ProcessField, RecordFieldValue } from "@/types/qpd";
+import { WorkflowActions } from "@/components/WorkflowActions";
+import { WorkflowHistory } from "@/components/WorkflowHistory";
+import { ProcessRecord, Process, ProcessField, RecordFieldValue, WorkflowStep } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -17,6 +19,7 @@ export default function RecordDetails() {
   const [process, setProcess] = useState<Process | null>(null);
   const [fields, setFields] = useState<ProcessField[]>([]);
   const [fieldValues, setFieldValues] = useState<RecordFieldValue[]>([]);
+  const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
@@ -82,6 +85,19 @@ export default function RecordDetails() {
         console.error('Error loading field values:', valuesError);
       } else {
         setFieldValues(valuesData || []);
+      }
+
+      // Load workflow steps
+      const { data: stepsData, error: stepsError } = await supabase
+        .from('workflow_steps')
+        .select('*')
+        .eq('process_id', recordData.process_id)
+        .order('step_order');
+
+      if (stepsError) {
+        console.error('Error loading workflow steps:', stepsError);
+      } else {
+        setWorkflowSteps((stepsData || []) as WorkflowStep[]);
       }
     } catch (error) {
       console.error('Record details load error:', error);
@@ -274,6 +290,13 @@ export default function RecordDetails() {
           </Card>
         </div>
 
+        {/* Workflow Actions */}
+        <WorkflowActions 
+          record={record} 
+          workflowSteps={workflowSteps} 
+          onRecordUpdate={loadRecordDetails} 
+        />
+
         {/* Field Values */}
         <Card className="shadow-elegant">
           <CardHeader>
@@ -341,6 +364,9 @@ export default function RecordDetails() {
             )}
           </CardContent>
         </Card>
+
+        {/* Workflow History */}
+        <WorkflowHistory recordId={record.id} workflowSteps={workflowSteps} />
       </div>
     </div>
   );
