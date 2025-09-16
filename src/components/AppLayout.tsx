@@ -2,6 +2,8 @@ import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 export function AppLayout() {
+  console.log("🏗️ AppLayout component rendering");
+  
   return <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />

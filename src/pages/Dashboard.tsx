@@ -11,6 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Dashboard() {
+  console.log("📊 Dashboard component rendering");
+  
   const [processes, setProcesses] = useState<Process[]>([]);
   const [recentRecords, setRecentRecords] = useState<ProcessRecord[]>([]);
   const [showProcessWizard, setShowProcessWizard] = useState(false);
