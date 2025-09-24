@@ -10,7 +10,7 @@ interface StatusBadgeProps {
 const statusConfig = {
   draft: {
     label: "Draft",
-    className: "bg-status-draft text-primary-foreground",
+    className: "bg-status-draft text-primary",
   },
   in_progress: {
     label: "In Progress", 
