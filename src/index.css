@@ -2,36 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Quality Process Designer Design System - Modern Life Sciences QMS */
+/* Quality Process Designer Design System - Modern Life Sciences QMS with Brand Guidelines */
 
 @layer base {
   :root {
-    --background: 248 250% 99%;
-    --foreground: 215 25% 15%;
+    /* Scilife Neutral Palette */
+    --sl-neutral-0: 0 0% 100%;
+    --sl-neutral-50: 220 23% 97%;
+    --sl-neutral-100: 220 11% 95%;
+    --sl-neutral-200: 230 14% 91%;
+    --sl-neutral-300: 234 11% 82%;
+    --sl-neutral-400: 232 12% 65%;
+    --sl-neutral-500: 232 17% 43%;
+    --sl-neutral-600: 232 37% 28%;
+    --sl-neutral-700: 232 74% 14%;
+    --sl-neutral-800: 232 76% 10%;
+    --sl-neutral-900: 233 72% 7%;
+    --sl-neutral-950: 232 71% 4%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    /* Scilife Blue Palette */
+    --sl-blue-50: 232 100% 97%;
+    --sl-blue-100: 231 94% 93%;
+    --sl-blue-200: 232 97% 88%;
+    --sl-blue-300: 232 94% 80%;
+    --sl-blue-400: 232 90% 72%;
+    --sl-blue-500: 232 85% 61%;
+    --sl-blue-600: 232 74% 53%;
+    --sl-blue-700: 232 72% 46%;
+    --sl-blue-800: 232 74% 37%;
+    --sl-blue-900: 232 74% 26%;
+    --sl-blue-950: 232 74% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    /* Scilife Yellow Palette */
+    --sl-yellow-50: 44 100% 97%;
+    --sl-yellow-100: 45 94% 94%;
+    --sl-yellow-200: 47 91% 86%;
+    --sl-yellow-300: 46 92% 80%;
+    --sl-yellow-400: 45 93% 68%;
+    --sl-yellow-500: 44 90% 55%;
+    --sl-yellow-600: 44 88% 45%;
+    --sl-yellow-700: 42 92% 34%;
+    --sl-yellow-800: 40 90% 24%;
+    --sl-yellow-900: 38 93% 17%;
+    --sl-yellow-950: 38 95% 8%;
 
-    /* Primary - Professional blue for quality/compliance */
-    --primary: 217 78% 51%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 78% 45%;
-    --primary-glow: 217 78% 70%;
+    /* Core theme colors using brand palette */
+    --background: var(--sl-neutral-50);
+    --foreground: var(--sl-neutral-700);
 
-    /* Secondary - Softer accent for supporting elements */
-    --secondary: 215 25% 95%;
-    --secondary-foreground: 215 25% 25%;
+    --card: var(--sl-neutral-0);
+    --card-foreground: var(--sl-neutral-700);
 
-    --muted: 215 25% 96%;
-    --muted-foreground: 215 16% 50%;
+    --popover: var(--sl-neutral-0);
+    --popover-foreground: var(--sl-neutral-700);
 
-    --accent: 142 76% 94%;
-    --accent-foreground: 142 76% 25%;
+    --primary: var(--sl-neutral-700);
+    --primary-foreground: var(--sl-neutral-0);
+    --primary-hover: var(--sl-neutral-800);
+    --primary-glow: var(--sl-neutral-500);
 
-    /* Status colors for workflow states */
+    --secondary: var(--sl-neutral-100);
+    --secondary-foreground: var(--sl-neutral-700);
+
+    --muted: var(--sl-neutral-100);
+    --muted-foreground: var(--sl-neutral-500);
+
+    --accent: var(--sl-neutral-100);
+    --accent-foreground: var(--sl-neutral-700);
+
+    /* Status colors for workflow states - preserved for QMS functionality */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
@@ -39,30 +78,39 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Workflow status colors */
+    /* Workflow status colors - preserved for QMS functionality */
     --status-draft: 215 16% 70%;
     --status-in-progress: 217 78% 51%;
     --status-approved: 142 76% 36%;
     --status-rejected: 0 84% 60%;
     --status-completed: 142 76% 25%;
 
-    --border: 215 25% 88%;
-    --input: 0 0% 100%;
-    --ring: 217 78% 51%;
+    --border: var(--sl-neutral-200);
+    --input: var(--sl-neutral-200);
+    --ring: var(--sl-neutral-700);
 
-    /* Professional gradients */
+    /* Professional gradients using brand colors */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(217 78% 60%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(215 25% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--sl-neutral-600)) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--sl-neutral-100)));
 
     /* Shadows for enterprise feel */
     --shadow-elegant: 0 4px 20px hsl(var(--primary) / 0.08);
-    --shadow-card: 0 2px 8px hsl(215 25% 15% / 0.06);
+    --shadow-card: 0 2px 8px hsl(var(--sl-neutral-700) / 0.06);
     --shadow-glow: 0 0 30px hsl(var(--primary) / 0.15);
 
     /* Animations */
     --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Typography Variables */
+    --text-section-header-menu1: 12px;
+    --text-nav-item-menu1: 15px;
+    --font-family-dm-sans: 'DM Sans', sans-serif;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-normal: 400;
 
     --radius: 0.5rem;
 
@@ -129,5 +177,67 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-family-dm-sans);
+    font-size: 16px;
   }
+}
+
+/* Navigation Menu Specific Classes */
+.nav-section-header-menu1 {
+  font-family: var(--font-family-dm-sans);
+  font-size: var(--text-section-header-menu1) !important;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+}
+
+.nav-item-label-menu1 {
+  font-family: var(--font-family-dm-sans);
+  font-size: var(--text-nav-item-menu1) !important;
+  font-weight: var(--font-weight-regular);
+  line-height: 1.5;
+}
+
+/* Menu Animation Classes */
+.menu-expand {
+  animation: expand 0.3s ease-in-out forwards;
+}
+
+.menu-collapse {
+  animation: collapse 0.3s ease-in-out forwards;
+}
+
+@keyframes expand {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+}
+
+@keyframes collapse {
+  from {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Smooth transition for parent menu items */
+.menu-item-transition {
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+/* Enhanced chevron transition */
+.chevron-transition {
+  transition: transform 0.15s ease-in-out, color 0.15s ease-in-out;
 }

@@ -18,12 +18,57 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'dm-sans': ['DM Sans', 'sans-serif'],
+				'sans': ['DM Sans', 'ui-sans-serif', 'system-ui']
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				// Scilife Brand Palette
+				'sl-neutral': {
+					0: 'hsl(var(--sl-neutral-0))',
+					50: 'hsl(var(--sl-neutral-50))',
+					100: 'hsl(var(--sl-neutral-100))',
+					200: 'hsl(var(--sl-neutral-200))',
+					300: 'hsl(var(--sl-neutral-300))',
+					400: 'hsl(var(--sl-neutral-400))',
+					500: 'hsl(var(--sl-neutral-500))',
+					600: 'hsl(var(--sl-neutral-600))',
+					700: 'hsl(var(--sl-neutral-700))',
+					800: 'hsl(var(--sl-neutral-800))',
+					900: 'hsl(var(--sl-neutral-900))',
+					950: 'hsl(var(--sl-neutral-950))'
+				},
+				'sl-blue': {
+					50: 'hsl(var(--sl-blue-50))',
+					100: 'hsl(var(--sl-blue-100))',
+					200: 'hsl(var(--sl-blue-200))',
+					300: 'hsl(var(--sl-blue-300))',
+					400: 'hsl(var(--sl-blue-400))',
+					500: 'hsl(var(--sl-blue-500))',
+					600: 'hsl(var(--sl-blue-600))',
+					700: 'hsl(var(--sl-blue-700))',
+					800: 'hsl(var(--sl-blue-800))',
+					900: 'hsl(var(--sl-blue-900))',
+					950: 'hsl(var(--sl-blue-950))'
+				},
+				'sl-yellow': {
+					50: 'hsl(var(--sl-yellow-50))',
+					100: 'hsl(var(--sl-yellow-100))',
+					200: 'hsl(var(--sl-yellow-200))',
+					300: 'hsl(var(--sl-yellow-300))',
+					400: 'hsl(var(--sl-yellow-400))',
+					500: 'hsl(var(--sl-yellow-500))',
+					600: 'hsl(var(--sl-yellow-600))',
+					700: 'hsl(var(--sl-yellow-700))',
+					800: 'hsl(var(--sl-yellow-800))',
+					900: 'hsl(var(--sl-yellow-900))',
+					950: 'hsl(var(--sl-yellow-950))'
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))',
