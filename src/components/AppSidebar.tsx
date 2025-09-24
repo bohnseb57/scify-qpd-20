@@ -85,7 +85,8 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-2">
           <Building2 className="h-6 w-6 text-primary" />
-          {!collapsed && <span className="font-semibold text-sidebar-foreground">Scillife QMS</span>}
+          {!collapsed && <span className="font-semibold text-sidebar-foreground">Project Q
+        </span>}
         </div>
       </SidebarHeader>
 
