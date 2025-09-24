@@ -228,17 +228,17 @@ export default function RecordDetails() {
               <StatusBadge status={record.current_status} />
               {isEditing ? (
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleSaveEdit}>
+                  <Button variant="default" onClick={handleSaveEdit}>
                     <Save className="h-4 w-4" />
                     Save Changes
                   </Button>
-                  <Button variant="ghost" onClick={handleCancelEdit}>
+                  <Button variant="outline" onClick={handleCancelEdit}>
                     <X className="h-4 w-4" />
                     Cancel
                   </Button>
                 </div>
               ) : (
-                <Button variant="outline" onClick={handleEditClick}>
+                <Button variant="default" onClick={handleEditClick}>
                   <Edit className="h-4 w-4" />
                   Edit Record
                 </Button>
