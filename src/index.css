@@ -79,7 +79,7 @@
     --destructive-foreground: 0 0% 100%;
 
     /* Workflow status colors - preserved for QMS functionality */
-    --status-draft: 215 16% 70%;
+    --status-draft: 46 92% 80%;
     --status-in-progress: 217 78% 51%;
     --status-approved: 142 76% 36%;
     --status-rejected: 0 84% 60%;
