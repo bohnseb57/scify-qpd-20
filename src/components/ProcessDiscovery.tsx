@@ -6,8 +6,15 @@ import { ArrowLeft, ArrowRight, Target, AlertTriangle, Clock, CheckCircle } from
 import { useNavigate } from "react-router-dom";
 
 interface ProcessDiscoveryProps {
-  onProcessSelected: (processId: string, processName: string) => void;
+  onProcessSelected: (processId: string, processName: string, discoveryAnswers?: DiscoveryAnswers) => void;
   onSkip: () => void;
+}
+
+export interface DiscoveryAnswers {
+  situation_type?: string;
+  impact_severity?: string;
+  action_type?: string;
+  timeline?: string;
 }
 
 interface QuestionOption {
@@ -210,7 +217,15 @@ export function ProcessDiscovery({ onProcessSelected, onSkip }: ProcessDiscovery
     // For this prototype, any combination of answers leads to CAPA
     // In a real implementation, this would have more sophisticated logic
     const capaProcessId = "59913940-014c-4c93-b90b-bf69b591ab1f"; // Known CAPA process ID
-    onProcessSelected(capaProcessId, "CAPA");
+    
+    const discoveryAnswers: DiscoveryAnswers = {
+      situation_type: answers.situation_type?.[0],
+      impact_severity: answers.impact_severity?.[0],
+      action_type: answers.action_type?.[0],
+      timeline: answers.timeline?.[0]
+    };
+    
+    onProcessSelected(capaProcessId, "CAPA", discoveryAnswers);
   };
 
   const generateRecommendationText = (): string => {

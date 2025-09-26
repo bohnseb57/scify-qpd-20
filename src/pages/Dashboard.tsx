@@ -312,7 +312,7 @@ export default function Dashboard() {
                     onClick={() => navigate(`/record/${record.id}`)}
                   >
                     <div className="flex items-start justify-between">
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-semibold text-sm">{record.record_title}</h3>
                         <p className="text-xs text-muted-foreground">
                           {record.process?.name || 'Unknown Process'}
@@ -320,8 +320,35 @@ export default function Dashboard() {
                         <p className="text-xs text-muted-foreground">
                           {new Date(record.created_at).toLocaleDateString()}
                         </p>
+                        
+                        {/* Mock task summary for CAPA records */}
+                        {record.process?.name === 'CAPA' && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className="text-xs bg-sl-blue-50 text-sl-blue-700 border-sl-blue-200">
+                              3 Tasks Assigned
+                            </Badge>
+                            <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                              1 Completed
+                            </Badge>
+                          </div>
+                        )}
                       </div>
-                      <StatusBadge status={record.current_status} />
+                      <div className="flex flex-col items-end gap-2">
+                        <StatusBadge status={record.current_status} />
+                        {record.process?.name === 'CAPA' && (
+                          <div className="flex -space-x-1">
+                            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs text-white font-medium border-2 border-background">
+                              S
+                            </div>
+                            <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center text-xs text-white font-medium border-2 border-background">
+                              M
+                            </div>
+                            <div className="w-6 h-6 rounded-full bg-warning flex items-center justify-center text-xs text-white font-medium border-2 border-background">
+                              E
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </Card>
                 ))

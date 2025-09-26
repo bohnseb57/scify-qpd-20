@@ -6,18 +6,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, FileText, Lightbulb } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, FileText, Lightbulb, User, Plus, Trash2 } from "lucide-react";
 import { ProcessField, Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { DynamicForm } from "@/components/DynamicForm";
+import { DiscoveryAnswers } from "@/components/ProcessDiscovery";
+import { TaskManager } from "@/components/TaskManager";
 
 interface GuidedRecordCreationProps {
   processId: string;
   processName: string;
+  discoveryAnswers?: DiscoveryAnswers;
   onComplete: () => void;
   onCancel: () => void;
+}
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  assignedUser: string;
+  dueDate: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'pending' | 'in_progress' | 'completed';
 }
 
 interface StepInfo {
@@ -27,15 +40,25 @@ interface StepInfo {
   icon: React.ReactNode;
 }
 
-export function GuidedRecordCreation({ processId, processName, onComplete, onCancel }: GuidedRecordCreationProps) {
+export function GuidedRecordCreation({ processId, processName, discoveryAnswers, onComplete, onCancel }: GuidedRecordCreationProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [process, setProcess] = useState<Process | null>(null);
   const [fields, setFields] = useState<ProcessField[]>([]);
   const [recordTitle, setRecordTitle] = useState("");
   const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
+
+  // Mock team members for task assignment
+  const teamMembers = [
+    { id: '1', name: 'Sarah Johnson', role: 'QA Manager' },
+    { id: '2', name: 'Mike Chen', role: 'Quality Engineer' },
+    { id: '3', name: 'Emily Davis', role: 'Process Specialist' },
+    { id: '4', name: 'James Wilson', role: 'QA Technician' },
+    { id: '5', name: 'Lisa Rodriguez', role: 'Compliance Officer' }
+  ];
 
   const steps: StepInfo[] = [
     {
@@ -57,6 +80,12 @@ export function GuidedRecordCreation({ processId, processName, onComplete, onCan
       icon: <CheckCircle className="h-5 w-5" />
     },
     {
+      id: "tasks",
+      title: "Task Management",
+      description: "Define tasks and assign team members",
+      icon: <User className="h-5 w-5" />
+    },
+    {
       id: "review",
       title: "Review & Submit",
       description: "Review your information before creating the record",
@@ -67,6 +96,12 @@ export function GuidedRecordCreation({ processId, processName, onComplete, onCan
   useEffect(() => {
     loadProcessDetails();
   }, [processId]);
+
+  useEffect(() => {
+    if (discoveryAnswers && fields.length > 0) {
+      applyPreFilling();
+    }
+  }, [discoveryAnswers, fields]);
 
   const loadProcessDetails = async () => {
     try {
@@ -119,11 +154,100 @@ export function GuidedRecordCreation({ processId, processName, onComplete, onCan
     }
   };
 
+  const applyPreFilling = () => {
+    if (!discoveryAnswers) return;
+
+    const prefilledValues: Record<string, string> = {};
+
+    // Pre-fill title
+    if (discoveryAnswers.situation_type) {
+      const titleMap: Record<string, string> = {
+        'quality_issue': 'Quality Issue Investigation - ',
+        'customer_complaint': 'Customer Complaint Resolution - ',
+        'audit_finding': 'Audit Finding Correction - ',
+        'improvement_opportunity': 'Process Improvement - ',
+        'risk_assessment': 'Risk Mitigation - '
+      };
+      const prefix = titleMap[discoveryAnswers.situation_type] || 'Quality Action - ';
+      setRecordTitle(prefix + new Date().toLocaleDateString());
+    }
+
+    // Pre-fill form fields based on discovery answers
+    fields.forEach(field => {
+      const fieldName = field.field_name.toLowerCase();
+      
+      if (fieldName.includes('description')) {
+        const descriptions: Record<string, string> = {
+          'quality_issue': 'A quality deviation has been identified that requires systematic investigation and corrective action to prevent recurrence.',
+          'customer_complaint': 'Customer feedback has highlighted an issue that needs immediate attention and comprehensive resolution.',
+          'audit_finding': 'An internal audit has identified a non-conformance that requires systematic corrective action.',
+          'improvement_opportunity': 'An opportunity for process improvement has been identified to enhance quality and operational efficiency.',
+          'risk_assessment': 'Risk analysis has identified a potential issue requiring preventive action to mitigate future impact.'
+        };
+        if (discoveryAnswers.situation_type) {
+          prefilledValues[field.id] = descriptions[discoveryAnswers.situation_type] || '';
+        }
+      }
+
+      if (fieldName.includes('severity')) {
+        const severityMap: Record<string, string> = {
+          'product_safety': 'Critical',
+          'customer_satisfaction': 'High',
+          'regulatory_compliance': 'High',
+          'process_efficiency': 'Medium',
+          'cost_impact': 'Medium',
+          'minor_impact': 'Low'
+        };
+        if (discoveryAnswers.impact_severity) {
+          prefilledValues[field.id] = severityMap[discoveryAnswers.impact_severity] || '';
+        }
+      }
+
+      if (fieldName.includes('target_completion') && discoveryAnswers.timeline) {
+        const timelineMap: Record<string, number> = {
+          'immediate': 7,
+          'this_week': 14,
+          'next_month': 30,
+          'long_term': 90
+        };
+        const days = timelineMap[discoveryAnswers.timeline] || 30;
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        prefilledValues[field.id] = targetDate.toISOString().split('T')[0];
+      }
+    });
+
+    setFormValues(prefilledValues);
+  };
+
   const handleFormChange = (fieldId: string, value: string) => {
     setFormValues(prev => ({
       ...prev,
       [fieldId]: value
     }));
+  };
+
+  const addTask = () => {
+    const newTask: Task = {
+      id: `task-${Date.now()}`,
+      title: '',
+      description: '',
+      assignedUser: '',
+      dueDate: '',
+      priority: 'medium',
+      status: 'pending'
+    };
+    setTasks([...tasks, newTask]);
+  };
+
+  const removeTask = (taskId: string) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
+  };
+
+  const updateTask = (taskId: string, updates: Partial<Task>) => {
+    setTasks(tasks.map(task => 
+      task.id === taskId ? { ...task, ...updates } : task
+    ));
   };
 
   const isStepComplete = (stepIndex: number): boolean => {
@@ -137,7 +261,8 @@ export function GuidedRecordCreation({ processId, processName, onComplete, onCan
           formValues[field.id] && formValues[field.id].trim().length > 0
         );
       }
-      case 3: return true; // Review step
+      case 3: return true; // Tasks step - optional
+      case 4: return true; // Review step
       default: return false;
     }
   };
@@ -404,6 +529,16 @@ export function GuidedRecordCreation({ processId, processName, onComplete, onCan
 
             {currentStep === 3 && (
               <div className="space-y-6">
+                <TaskManager 
+                  tasks={tasks}
+                  onTasksChange={setTasks}
+                  teamMembers={teamMembers}
+                />
+              </div>
+            )}
+
+            {currentStep === 4 && (
+              <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Review Your Information</h3>
                   <p className="text-muted-foreground mb-6">
@@ -433,17 +568,46 @@ export function GuidedRecordCreation({ processId, processName, onComplete, onCan
                         <CardContent>
                           <p className="text-sm whitespace-pre-wrap">{value}</p>
                         </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
 
-                <div className="bg-success/10 border border-success/20 rounded-lg p-4">
-                  <p className="text-sm text-success">
-                    ✓ Your {processName} record is ready to be created. Once submitted, it will enter the workflow 
-                    for review and processing.
-                  </p>
-                </div>
+                  {tasks.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-4">Assigned Tasks ({tasks.length})</h4>
+                      <div className="space-y-2">
+                        {tasks.map((task, index) => (
+                          <Card key={task.id} className="border-muted">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-sm">{task.title || `Task ${index + 1}`}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Assigned to: {teamMembers.find(m => m.id === task.assignedUser)?.name || 'Unassigned'}
+                                  </p>
+                                </div>
+                                <Badge variant="outline" className={
+                                  task.priority === 'high' ? 'text-destructive bg-destructive/10 border-destructive/20' :
+                                  task.priority === 'medium' ? 'text-warning bg-warning/10 border-warning/20' :
+                                  'text-success bg-success/10 border-success/20'
+                                }>
+                                  {task.priority}
+                                </Badge>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+                    <p className="text-sm text-success">
+                      ✓ Your {processName} record is ready to be created. Once submitted, it will enter the workflow 
+                      for review and processing.
+                    </p>
+                  </div>
               </div>
             )}
           </CardContent>

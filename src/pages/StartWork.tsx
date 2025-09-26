@@ -11,11 +11,15 @@ type WorkflowStep = "discovery" | "process-selection" | "record-creation";
 
 export default function StartWork() {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>("discovery");
-  const [selectedProcess, setSelectedProcess] = useState<{id: string, name: string} | null>(null);
+  const [selectedProcess, setSelectedProcess] = useState<{
+    id: string;
+    name: string;
+    discoveryAnswers?: any;
+  } | null>(null);
   const navigate = useNavigate();
 
-  const handleProcessSelected = (processId: string, processName: string) => {
-    setSelectedProcess({ id: processId, name: processName });
+  const handleProcessSelected = (processId: string, processName: string, discoveryAnswers?: any) => {
+    setSelectedProcess({ id: processId, name: processName, discoveryAnswers });
     setCurrentStep("record-creation");
   };
 
@@ -45,6 +49,7 @@ export default function StartWork() {
       <GuidedRecordCreation
         processId={selectedProcess.id}
         processName={selectedProcess.name}
+        discoveryAnswers={selectedProcess.discoveryAnswers}
         onComplete={handleComplete}
         onCancel={handleCancel}
       />

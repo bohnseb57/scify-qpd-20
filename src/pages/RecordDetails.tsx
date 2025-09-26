@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Clock, User, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, FileText, Clock, User, Edit, Save, X, CheckCircle, AlertTriangle, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { WorkflowActions } from "@/components/WorkflowActions";
 import { WorkflowHistory } from "@/components/WorkflowHistory";
+import { TaskManager } from "@/components/TaskManager";
 import { ProcessRecord, Process, ProcessField, RecordFieldValue, WorkflowStep } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { generateMockTasks, generateMockAuditTrail, mockTeamMembers, MockTask, MockAuditEntry } from "@/utils/mockData";
 
 export default function RecordDetails() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +24,8 @@ export default function RecordDetails() {
   const [fields, setFields] = useState<ProcessField[]>([]);
   const [fieldValues, setFieldValues] = useState<RecordFieldValue[]>([]);
   const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
+  const [mockTasks, setMockTasks] = useState<MockTask[]>([]);
+  const [mockAuditTrail, setMockAuditTrail] = useState<MockAuditEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
@@ -98,6 +104,12 @@ export default function RecordDetails() {
         console.error('Error loading workflow steps:', stepsError);
       } else {
         setWorkflowSteps((stepsData || []) as WorkflowStep[]);
+      }
+
+      // Generate mock data for tasks and audit trail
+      if (recordData) {
+        setMockTasks(generateMockTasks(recordData.id));
+        setMockAuditTrail(generateMockAuditTrail(recordData.id));
       }
     } catch (error) {
       console.error('Record details load error:', error);
@@ -248,125 +260,223 @@ export default function RecordDetails() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
-        {/* Record Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="shadow-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Status</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <StatusBadge status={record.current_status} />
-            </CardContent>
-          </Card>
+      <div className="max-w-6xl mx-auto p-6">
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Tasks ({mockTasks.length})
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Audit Trail
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="shadow-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Created</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {new Date(record.created_at).toLocaleDateString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {new Date(record.created_at).toLocaleTimeString()}
-              </p>
-            </CardContent>
-          </Card>
+          <TabsContent value="overview" className="space-y-8">
+            {/* Record Overview Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="shadow-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Status</CardTitle>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <StatusBadge status={record.current_status} />
+                </CardContent>
+              </Card>
 
-          <Card className="shadow-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Created By</CardTitle>
-              <User className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Demo User</div>
-              <p className="text-xs text-muted-foreground">
-                Process initiator
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="shadow-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Created</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {new Date(record.created_at).toLocaleDateString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(record.created_at).toLocaleTimeString()}
+                  </p>
+                </CardContent>
+              </Card>
 
-        {/* Workflow Actions */}
-        <WorkflowActions 
-          record={record} 
-          workflowSteps={workflowSteps} 
-          onRecordUpdate={loadRecordDetails} 
-        />
+              <Card className="shadow-card">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Created By</CardTitle>
+                  <User className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Demo User</div>
+                  <p className="text-xs text-muted-foreground">
+                    Process initiator
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Field Values */}
-        <Card className="shadow-elegant">
-          <CardHeader>
-            <CardTitle>Record Details</CardTitle>
-            <CardDescription>
-              Field values entered for this record
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {fields.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No fields configured</h3>
-                <p className="text-muted-foreground">
-                  This process doesn't have any custom fields configured
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {fields.map((field) => {
-                  const value = getFieldValue(field.id);
-                  return (
-                    <div key={field.id} className="border-b border-border pb-4 last:border-b-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-sm font-medium text-foreground">
-                          {field.field_label}
-                        </h4>
-                        {field.is_required && (
-                          <span className="text-destructive text-xs">*</span>
-                        )}
+            {/* Workflow Actions */}
+            <WorkflowActions 
+              record={record} 
+              workflowSteps={workflowSteps} 
+              onRecordUpdate={loadRecordDetails} 
+            />
+
+            {/* Field Values */}
+            <Card className="shadow-elegant">
+              <CardHeader>
+                <CardTitle>Record Details</CardTitle>
+                <CardDescription>
+                  Field values entered for this record
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {fields.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No fields configured</h3>
+                    <p className="text-muted-foreground">
+                      This process doesn't have any custom fields configured
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {fields.map((field) => {
+                      const value = getFieldValue(field.id);
+                      return (
+                        <div key={field.id} className="border-b border-border pb-4 last:border-b-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="text-sm font-medium text-foreground">
+                              {field.field_label}
+                            </h4>
+                            {field.is_required && (
+                              <span className="text-destructive text-xs">*</span>
+                            )}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {isEditing ? (
+                              field.field_type === 'textarea' ? (
+                                <Textarea
+                                  value={editValues[field.id] || ''}
+                                  onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                                  placeholder={`Enter ${field.field_label.toLowerCase()}`}
+                                  className="mt-1"
+                                />
+                              ) : (
+                                <Input
+                                  type={field.field_type === 'number' ? 'number' : 
+                                        field.field_type === 'date' ? 'date' :
+                                        field.field_type === 'email' ? 'email' :
+                                        field.field_type === 'url' ? 'url' : 'text'}
+                                  value={editValues[field.id] || ''}
+                                  onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                                  placeholder={`Enter ${field.field_label.toLowerCase()}`}
+                                  className="mt-1"
+                                />
+                              )
+                            ) : (
+                              value ? (
+                                <span className="text-foreground">{value}</span>
+                              ) : (
+                                <span className="italic">No value entered</span>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tasks" className="space-y-6">
+            <Card className="shadow-elegant">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
+                  Task Management
+                </CardTitle>
+                <CardDescription>
+                  Tasks assigned for this {process?.name} record
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TaskManager 
+                  tasks={mockTasks.map(task => ({
+                    id: task.id,
+                    title: task.title,
+                    description: task.description,
+                    assignedUser: task.assignedUser,
+                    dueDate: task.dueDate,
+                    priority: task.priority,
+                    status: task.status
+                  }))}
+                  onTasksChange={() => {}} // Read-only for now
+                  teamMembers={mockTeamMembers}
+                  readOnly={true}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="audit" className="space-y-6">
+            <Card className="shadow-elegant">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Audit Trail
+                </CardTitle>
+                <CardDescription>
+                  Complete history of changes and actions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {mockAuditTrail.map((entry) => (
+                    <div key={entry.id} className="flex items-start gap-4 pb-4 border-b border-border last:border-b-0">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        entry.type === 'status_change' ? 'bg-sl-blue-100 text-sl-blue-700' :
+                        entry.type === 'field_update' ? 'bg-warning/20 text-warning' :
+                        entry.type === 'task_update' ? 'bg-success/20 text-success' :
+                        entry.type === 'approval' ? 'bg-primary/20 text-primary' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {entry.type === 'status_change' ? <AlertTriangle className="h-4 w-4" /> :
+                         entry.type === 'field_update' ? <FileText className="h-4 w-4" /> :
+                         entry.type === 'task_update' ? <CheckCircle className="h-4 w-4" /> :
+                         entry.type === 'approval' ? <User className="h-4 w-4" /> :
+                         <Clock className="h-4 w-4" />}
                       </div>
-                      <div className="text-muted-foreground">
-                        {isEditing ? (
-                          field.field_type === 'textarea' ? (
-                            <Textarea
-                              value={editValues[field.id] || ''}
-                              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                              placeholder={`Enter ${field.field_label.toLowerCase()}`}
-                              className="mt-1"
-                            />
-                          ) : (
-                            <Input
-                              type={field.field_type === 'number' ? 'number' : 
-                                    field.field_type === 'date' ? 'date' :
-                                    field.field_type === 'email' ? 'email' :
-                                    field.field_type === 'url' ? 'url' : 'text'}
-                              value={editValues[field.id] || ''}
-                              onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                              placeholder={`Enter ${field.field_label.toLowerCase()}`}
-                              className="mt-1"
-                            />
-                          )
-                        ) : (
-                          value ? (
-                            <span className="text-foreground">{value}</span>
-                          ) : (
-                            <span className="italic">No value entered</span>
-                          )
-                        )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium text-sm">{entry.action}</p>
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {entry.type.replace('_', ' ')}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">{entry.details}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{entry.user}</span>
+                          <span>•</span>
+                          <span>{new Date(entry.timestamp).toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Workflow History */}
-        <WorkflowHistory recordId={record.id} workflowSteps={workflowSteps} />
+            {/* Original Workflow History */}
+            <WorkflowHistory recordId={record.id} workflowSteps={workflowSteps} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
