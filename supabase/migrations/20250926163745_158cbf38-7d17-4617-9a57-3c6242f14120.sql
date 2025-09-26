@@ -1,0 +1,8 @@
+-- Enable Row Level Security on all tables that have policies but RLS disabled
+ALTER TABLE processes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE process_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE process_fields ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workflow_steps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workflow_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE record_field_values ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
