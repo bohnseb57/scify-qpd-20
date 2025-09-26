@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Settings, FileText, BarChart3, Users, Play } from "lucide-react";
+import { Plus, Settings, FileText, BarChart3, Users, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -179,7 +179,7 @@ export default function Dashboard() {
               className="bg-gradient-primary hover:bg-primary-hover transition-smooth flex items-center gap-2"
               size="lg"
             >
-              <Play className="h-5 w-5" />
+              <Sparkles className="h-5 w-5" />
               Start New Work
             </Button>
           </div>
@@ -266,8 +266,7 @@ export default function Dashboard() {
                 processes.map((process) => (
                   <Card 
                     key={process.id} 
-                    className="p-4 hover:shadow-card transition-all cursor-pointer"
-                    onClick={() => navigate(`/process/${process.id}`)}
+                    className="p-4 hover:shadow-card transition-all"
                   >
                     <div className="flex items-start justify-between">
                       <div>
@@ -281,9 +280,29 @@ export default function Dashboard() {
                           </Badge>
                         )}
                       </div>
-                      <Button variant="process" size="sm">
-                        Configure
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/process-configuration/${process.id}`);
+                          }}
+                        >
+                          Configure
+                        </Button>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate("/start-work");
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Create Record
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))
