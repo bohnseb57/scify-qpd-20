@@ -233,7 +233,12 @@ export default function RecordDetails() {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">{record.record_title}</h1>
-                <p className="text-muted-foreground">{process.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-muted-foreground">{process.name}</p>
+                  <Badge variant="outline" className="text-xs">
+                    CA-{String(record.created_at).slice(-8, -4)}
+                  </Badge>
+                </div>
               </div>
             </div>
             <div className="flex gap-2">

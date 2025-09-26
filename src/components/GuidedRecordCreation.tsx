@@ -162,13 +162,13 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
     // Pre-fill title
     if (discoveryAnswers.situation_type) {
       const titleMap: Record<string, string> = {
-        'quality_issue': 'Quality Issue Investigation - ',
-        'customer_complaint': 'Customer Complaint Resolution - ',
-        'audit_finding': 'Audit Finding Correction - ',
-        'improvement_opportunity': 'Process Improvement - ',
-        'risk_assessment': 'Risk Mitigation - '
+        'quality_issue': 'CAPA Investigation - Quality Issue - ',
+        'customer_complaint': 'CAPA Investigation - Customer Complaint - ',
+        'audit_finding': 'CAPA Investigation - Audit Finding - ',
+        'improvement_opportunity': 'CAPA Investigation - Process Improvement - ',
+        'risk_assessment': 'CAPA Investigation - Risk Mitigation - '
       };
-      const prefix = titleMap[discoveryAnswers.situation_type] || 'Quality Action - ';
+      const prefix = titleMap[discoveryAnswers.situation_type] || 'CAPA Investigation - ';
       setRecordTitle(prefix + new Date().toLocaleDateString());
     }
 
@@ -502,13 +502,6 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
                 <div className="space-y-4">
                   {fields.map((field) => (
                     <div key={field.id} className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Label className="text-sm font-medium">
-                          {field.field_label}
-                          {field.is_required && <span className="text-destructive ml-1">*</span>}
-                        </Label>
-                      </div>
-                      
                       <div className="bg-muted/50 border border-muted rounded-lg p-3 mb-2">
                         <p className="text-xs text-muted-foreground">
                           <Lightbulb className="h-3 w-3 inline mr-1" />
@@ -518,7 +511,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
 
                       <DynamicForm 
                         fields={[field]} 
-                        values={formValues} 
+                        values={formValues}
                         onChange={handleFormChange}
                       />
                     </div>

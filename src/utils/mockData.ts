@@ -149,13 +149,13 @@ export function prefilCAPAFormFromDiscovery(discoveryAnswers?: any): Record<stri
   // Generate title based on situation type
   if (discoveryAnswers.situation_type) {
     const situationMap: Record<string, string> = {
-      'quality_issue': 'Quality Issue Investigation',
-      'customer_complaint': 'Customer Complaint Resolution',
-      'audit_finding': 'Audit Finding Correction',
-      'improvement_opportunity': 'Process Improvement Initiative',
-      'risk_assessment': 'Risk Mitigation Action'
+      'quality_issue': 'CAPA Investigation - Quality Issue',
+      'customer_complaint': 'CAPA Investigation - Customer Complaint',
+      'audit_finding': 'CAPA Investigation - Audit Finding',
+      'improvement_opportunity': 'CAPA Investigation - Process Improvement',
+      'risk_assessment': 'CAPA Investigation - Risk Mitigation'
     };
-    prefilled['title'] = situationMap[discoveryAnswers.situation_type] || 'Quality Management Action';
+    prefilled['title'] = situationMap[discoveryAnswers.situation_type] || 'CAPA Investigation';
   }
 
   // Generate description based on discovery context
