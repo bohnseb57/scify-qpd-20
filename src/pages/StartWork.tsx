@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProcessDiscovery } from "@/components/ProcessDiscovery";
 import { GuidedRecordCreation } from "@/components/GuidedRecordCreation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Target, FileText, Settings } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type WorkflowStep = "discovery" | "process-selection" | "record-creation";
 
@@ -17,6 +17,19 @@ export default function StartWork() {
     discoveryAnswers?: any;
   } | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Check if we have a direct process selection from URL params
+  useEffect(() => {
+    const processId = searchParams.get('processId');
+    const processName = searchParams.get('processName');
+    
+    if (processId && processName) {
+      // Skip discovery and go directly to record creation
+      setSelectedProcess({ id: processId, name: decodeURIComponent(processName) });
+      setCurrentStep("record-creation");
+    }
+  }, [searchParams]);
 
   const handleProcessSelected = (processId: string, processName: string, discoveryAnswers?: any) => {
     setSelectedProcess({ id: processId, name: processName, discoveryAnswers });

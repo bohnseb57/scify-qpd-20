@@ -296,7 +296,7 @@ export default function Dashboard() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate("/start-work");
+                            navigate(`/start-work?processId=${process.id}&processName=${encodeURIComponent(process.name)}`);
                           }}
                         >
                           <Plus className="h-4 w-4 mr-1" />
