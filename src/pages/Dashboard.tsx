@@ -286,7 +286,7 @@ export default function Dashboard() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/process-configuration/${process.id}`);
+                            navigate(`/process-config/${process.id}`);
                           }}
                         >
                           Configure
