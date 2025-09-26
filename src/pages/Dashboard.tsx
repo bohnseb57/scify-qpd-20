@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Settings, FileText, BarChart3, Users } from "lucide-react";
+import { Plus, Settings, FileText, BarChart3, Users, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -167,11 +167,21 @@ export default function Dashboard() {
     <div className="bg-gradient-subtle min-h-full">
       <div className="border-b bg-background/95 backdrop-blur">
         <div className="px-6 py-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Quality Process Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Overview of your quality processes and recent activity
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Quality Process Dashboard</h1>
+              <p className="text-muted-foreground mt-1">
+                Overview of your quality processes and recent activity
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate("/start-work")}
+              className="bg-gradient-primary hover:bg-primary-hover transition-smooth flex items-center gap-2"
+              size="lg"
+            >
+              <Play className="h-5 w-5" />
+              Start New Work
+            </Button>
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ import ProcessConfigurationList from "./pages/ProcessConfigurationList";
 import ProcessConfiguration from "./pages/ProcessConfiguration";
 import ProcessFieldsConfiguration from "./pages/ProcessFieldsConfiguration";
 import ProcessWorkflowConfiguration from "./pages/ProcessWorkflowConfiguration";
+import StartWork from "./pages/StartWork";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => {
             <Routes>
             <Route path="/" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="start-work" element={<StartWork />} />
             <Route path="process/:id" element={<ProcessDetails />} />
             <Route path="create-process" element={<CreateProcess />} />
             <Route path="process-config" element={<ProcessConfigurationList />} />
