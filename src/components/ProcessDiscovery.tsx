@@ -187,15 +187,21 @@ export function ProcessDiscovery({ onProcessSelected, onSkip }: ProcessDiscovery
       ...prev,
       [questionId]: [optionId]
     }));
+    
+    // Auto-advance to next step after a short delay
+    setTimeout(() => {
+      if (currentStep < questions.length - 1) {
+        setCurrentStep(currentStep + 1);
+      }
+    }, 500);
   };
 
   const getCurrentAnswer = (questionId: string): string | undefined => {
     return answers[questionId]?.[0];
   };
 
-  const isStepComplete = (stepIndex: number): boolean => {
-    const question = questions[stepIndex];
-    return !!answers[question.id]?.length;
+  const isAllQuestionsAnswered = (): boolean => {
+    return questions.every((question) => !!answers[question.id]?.length);
   };
 
   const handleNext = () => {
@@ -356,19 +362,15 @@ export function ProcessDiscovery({ onProcessSelected, onSkip }: ProcessDiscovery
             ))}
           </div>
 
-          <Button
-            onClick={handleNext}
-            disabled={!isStepComplete(currentStep)}
-            className="flex items-center gap-2 bg-gradient-primary hover:bg-primary-hover"
-          >
-            {currentStep === questions.length - 1 ? "Get Recommendation" : "Next"}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          <div /> {/* Spacer to balance the layout */}
         </div>
 
-        {/* Show recommendation preview on last step */}
-        {currentStep === questions.length - 1 && isStepComplete(currentStep) && (
-          <Card className="mt-8 shadow-elegant border-success/20">
+        {/* Show recommendation automatically when all questions are answered */}
+        {isAllQuestionsAnswered() && (
+          <Card 
+            className="mt-8 shadow-elegant border-success/20 cursor-pointer hover:shadow-card transition-all"
+            onClick={handleComplete}
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-success">
                 <Target className="h-5 w-5" />
@@ -379,13 +381,18 @@ export function ProcessDiscovery({ onProcessSelected, onSkip }: ProcessDiscovery
               <p className="text-muted-foreground mb-4">
                 {generateRecommendationText()}
               </p>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                  Corrective & Preventive Action
-                </Badge>
-                <Badge variant="outline" className="bg-sl-blue-50 text-sl-blue-700 border-sl-blue-200">
-                  Quality Management
-                </Badge>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-success/10 text-success border-success/20">
+                    Corrective & Preventive Action
+                  </Badge>
+                  <Badge variant="outline" className="bg-sl-blue-50 text-sl-blue-700 border-sl-blue-200">
+                    Quality Management
+                  </Badge>
+                </div>
+                <Button size="sm" className="bg-gradient-primary hover:bg-primary-hover">
+                  Create CAPA Record <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
               </div>
             </CardContent>
           </Card>
