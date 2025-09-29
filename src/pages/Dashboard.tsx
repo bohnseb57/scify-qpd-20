@@ -244,8 +244,8 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Available Processes */}
+        <div className="grid grid-cols-1">
+          {/* Available Processes
           <Card className="shadow-elegant">
             <CardHeader>
               <CardTitle>Available Processes</CardTitle>
@@ -308,7 +308,7 @@ export default function Dashboard() {
                 ))
               )}
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Recent Records */}
           <Card className="shadow-elegant">
