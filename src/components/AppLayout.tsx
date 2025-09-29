@@ -8,9 +8,9 @@ export function AppLayout() {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-background/95 backdrop-blur px-4">
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-card backdrop-blur px-4">
             <SidebarTrigger className="-ml-1" />
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-md text-muted-foreground">
               <span>Quality Process Designer</span>
             </div>
           </header>
