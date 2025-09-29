@@ -138,7 +138,7 @@ export function AppSidebar() {
           </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="mt-2">
         {/* --- Disabled parents ABOVE Processes (matches Monitoring prototype) --- */}
         {[
           { Icon: BookOpen, label: "Knowledge" },
@@ -147,7 +147,7 @@ export function AppSidebar() {
           <div
             key={label}
             className={cn(
-              "mx-2 mt-2 flex items-center rounded-lg px-3 py-1 text-sm font-medium",
+              "mx-2 flex items-center rounded-lg px-3 py-1 text-sm font-medium",
               "text-muted-foreground opacity-60 cursor-not-allowed",
               collapsed && "justify-center"
             )}
