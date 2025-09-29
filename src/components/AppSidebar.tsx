@@ -26,7 +26,6 @@ import {
   SidebarHeader,
   SidebarSeparator,
   SidebarMenuBadge,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,20 +132,10 @@ export function AppSidebar() {
     <Sidebar className={collapsed ? "w-14" : "w-64"}>
       {/* Header (unchanged look) */}
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex h-16 items-center justify-between px-4">
-        <div className="flex-1 items-center gap-2">
+        <div className="flex-1 items-center gap-2 mx-2">
               <div className="text-sm font-bold">Project Q</div>
               <div className="text-xs text-muted-foreground">Processes Module</div>
           </div>
-
-          <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggle}
-          className="text-monitor-sidebar-text-muted hover:text-monitor-sidebar-text-muted hover:bg-monitor-sidebar-hover"
-        >
-            
-        </div>
       </SidebarHeader>
 
       <SidebarContent>
