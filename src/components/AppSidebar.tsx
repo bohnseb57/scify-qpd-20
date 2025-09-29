@@ -131,7 +131,7 @@ export function AppSidebar() {
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"}>
       {/* Header (unchanged look) */}
-      <SidebarHeader className="border-b border-sidebar-border">
+      <SidebarHeader className="border-b border-sidebar-border mx-2">
         <div className="flex-1 items-center gap-2">
               <div className="text-sm font-bold">Project Q</div>
               <div className="text-xs text-muted-foreground">Processes Module</div>
