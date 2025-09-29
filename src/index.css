@@ -122,9 +122,9 @@
 
     --sidebar-primary-foreground: 0 0% 98%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: var(--sl-neutral-700);
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: var(--sl-neutral-0);
 
     --sidebar-border: 220 13% 91%;
 
