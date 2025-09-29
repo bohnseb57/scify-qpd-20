@@ -169,7 +169,7 @@ export function AppSidebar() {
           tabIndex={0}
           aria-expanded={collapsed ? undefined : processesOpen}
           className={cn(
-            "mx-2 group flex items-center rounded-md px-3 py-1 text-sm font-medium cursor-pointer select-none",
+            "mx-2 group flex items-center rounded-md px-3 py-2 text-sm font-medium cursor-pointer select-none",
             "bg-sidebar-accent text-sidebar-accent-foreground",
             collapsed && "justify-center"
           )}
