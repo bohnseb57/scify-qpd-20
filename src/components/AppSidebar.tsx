@@ -12,6 +12,7 @@ import {
   BarChart3,
   ChevronRight,
   LockKeyhole,
+  Workflow
 } from "lucide-react";
 import {
   Sidebar,
@@ -168,7 +169,7 @@ export function AppSidebar() {
           tabIndex={0}
           aria-expanded={collapsed ? undefined : processesOpen}
           className={cn(
-            "mx-2 group flex items-center rounded-md px-3 text-sm font-medium cursor-pointer select-none",
+            "mx-2 mt-2 group flex items-center rounded-md px-3 text-sm font-medium cursor-pointer select-none",
             "text-foreground",
             collapsed && "justify-center"
           )}
@@ -188,7 +189,7 @@ export function AppSidebar() {
             if (collapsed) scheduleHideHover();
           }}
         >
-          <BarChart3 className="h-4 w-4 flex-shrink-0" />
+          <Workflow className="h-4 w-4 flex-shrink-0" />
           {!collapsed && (
             <>
               <span className="ml-3">Processes</span>
