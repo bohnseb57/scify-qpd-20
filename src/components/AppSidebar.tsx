@@ -131,12 +131,10 @@ export function AppSidebar() {
     <Sidebar className={collapsed ? "w-14" : "w-64"}>
       {/* Header (unchanged look) */}
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-2">
-          <Building2 className="h-6 w-6 text-primary" />
-          {!collapsed && (
-            <span className="font-semibold text-sidebar-foreground">Project Q</span>
-          )}
-        </div>
+        <div className="flex-1 items-center gap-2">
+              <div className="text-sm font-bold">Project Q</div>
+              <div className="text-xs text-muted-foreground">Processes Module</div>
+          </div>
       </SidebarHeader>
 
       <SidebarContent>
