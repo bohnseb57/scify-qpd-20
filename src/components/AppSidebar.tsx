@@ -215,7 +215,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive("/")}
-                      className="pl-10"
+                      className="pl-6"
                     >
                       <button
                         onClick={handleDashboard}
@@ -240,7 +240,7 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive(`/process/${process.id}`)}
-                        className="pl-10"
+                        className="pl-6"
                       >
                         <button
                           onClick={() => handleProcessClick(process.id)}
@@ -268,7 +268,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive("/create-process")}
-                      className="pl-10"
+                      className="pl-6"
                     >
                       <button onClick={handleCreateProcess} className="flex items-center gap-1">
                         <Plus className="h-4 w-4" />
@@ -281,7 +281,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       isActive={isActive("/process-config")}
-                      className="pl-10"
+                      className="pl-6"
                     >
                       <button onClick={() => navigate("/process-config")} className="flex items-center gap-1">
                         <Settings className="h-4 w-4" />
