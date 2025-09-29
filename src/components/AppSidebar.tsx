@@ -206,9 +206,9 @@ export function AppSidebar() {
 
         {/* --- Children (expanded mode only) with section headers --- */}
         {!collapsed && processesOpen && (
-          <div className="space-y-2">
+          <div className="space-y-0">
             {/* Overview */}
-            <SidebarGroup className="pt-1">
+            <SidebarGroup className="pt-0">
               <SidebarGroupLabel>Overview</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
