@@ -298,7 +298,7 @@ export function AppSidebar() {
 
         {/* --- Disabled parents BELOW Processes --- */}
         {[
-          { Icon: BarChart3, label: "Monitor" },
+          { Icon: BarChart3, label: "Monitoring" },
           { Icon: Settings, label: "Admin" },
         ].map(({ Icon, label }) => (
           <div
