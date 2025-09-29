@@ -170,7 +170,7 @@ export function AppSidebar() {
           aria-expanded={collapsed ? undefined : processesOpen}
           className={cn(
             "mx-2 group flex items-center rounded-md px-3 text-sm font-medium cursor-pointer select-none",
-            "text-foreground",
+            "bg-sidebar-accent text-sidebar-accent-foreground",
             collapsed && "justify-center"
           )}
           onClick={() => {
