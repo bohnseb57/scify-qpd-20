@@ -208,7 +208,7 @@ export function AppSidebar() {
           <div className="space-y-0">
             {/* Overview */}
             <SidebarGroup className="pt-0">
-              <SidebarGroupLabel>Overview</SidebarGroupLabel>
+              <SidebarGroupLabel className="pl-6">Overview</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
@@ -232,7 +232,7 @@ export function AppSidebar() {
         
             {/* Quality Processes */}
             <SidebarGroup>
-              <SidebarGroupLabel>Quality Processes</SidebarGroupLabel>
+              <SidebarGroupLabel className="pl-6">Quality Processes</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {processes.map((process) => (
@@ -261,7 +261,7 @@ export function AppSidebar() {
         
             {/* Configuration */}
             <SidebarGroup>
-              <SidebarGroupLabel>Configuration</SidebarGroupLabel>
+              <SidebarGroupLabel className="pl-6">Configuration</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
