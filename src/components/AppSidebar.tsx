@@ -204,77 +204,98 @@ export function AppSidebar() {
           )}
         </div>
 
-        {/* --- Children (expanded mode only) --- */}
+        {/* --- Children (expanded mode only) with section headers --- */}
         {!collapsed && processesOpen && (
-          <div className="mt-1 space-y-1">
-            {/* Overview / Dashboard */}
-            <button
-              onClick={handleDashboard}
-              className={cn(
-                "mx-2 flex w-[calc(100%-1rem)] items-center rounded-lg px-3 py-2 text-sm font-medium text-left transition-colors",
-                "pl-10",
-                isActive("/")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <ClipboardList className="mr-2 h-4 w-4" />
-              Dashboard
-            </button>
-
-            {/* Quality Processes (list from Supabase) */}
-            {processes.map((process) => (
-              <button
-                key={process.id}
-                onClick={() => handleProcessClick(process.id)}
-                className={cn(
-                  "mx-2 flex w-[calc(100%-1rem)] items-center rounded-lg px-3 py-2 text-sm font-medium text-left transition-colors",
-                  "pl-10",
-                  isActive(`/process/${process.id}`)
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                <span className="flex-1 truncate">{process.name}</span>
-                <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
-                  {recordCounts[process.id] ?? 0}
-                </span>
-              </button>
-            ))}
-
-            <SidebarSeparator className="mx-2" />
-
+          <div className="mt-1 space-y-2">
+            {/* Overview */}
+            <SidebarGroup className="pt-1">
+              <SidebarGroupLabel>Overview</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive("/")}
+                      className="pl-10"
+                    >
+                      <button
+                        onClick={handleDashboard}
+                        className="flex items-center gap-2"
+                      >
+                        <ClipboardList className="h-4 w-4" />
+                        <span>Dashboard</span>
+                      </button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+        
+            {/* Quality Processes */}
+            <SidebarGroup>
+              <SidebarGroupLabel>Quality Processes</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {processes.map((process) => (
+                    <SidebarMenuItem key={process.id}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(`/process/${process.id}`)}
+                        className="pl-10"
+                      >
+                        <button
+                          onClick={() => handleProcessClick(process.id)}
+                          className="flex w-full items-center gap-2"
+                        >
+                          <FileText className="h-4 w-4" />
+                          <span className="flex-1 truncate">{process.name}</span>
+                          <SidebarMenuBadge>
+                            {recordCounts[process.id] ?? 0}
+                          </SidebarMenuBadge>
+                        </button>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+        
             {/* Configuration */}
-            <button
-              onClick={handleCreateProcess}
-              className={cn(
-                "mx-2 flex w-[calc(100%-1rem)] items-center rounded-lg px-3 py-2 text-sm font-medium text-left transition-colors",
-                "pl-10",
-                isActive("/create-process")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Create Process
-            </button>
-
-            <button
-              onClick={() => navigate("/process-config")}
-              className={cn(
-                "mx-2 mb-1 flex w-[calc(100%-1rem)] items-center rounded-lg px-3 py-2 text-sm font-medium text-left transition-colors",
-                "pl-10",
-                isActive("/process-config")
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Manage Processes
-            </button>
+            <SidebarGroup>
+              <SidebarGroupLabel>Configuration</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive("/create-process")}
+                      className="pl-10"
+                    >
+                      <button onClick={handleCreateProcess} className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
+                        <span>Create Process</span>
+                      </button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+        
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive("/process-config")}
+                      className="pl-10"
+                    >
+                      <button onClick={() => navigate("/process-config")} className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        <span>Manage Processes</span>
+                      </button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </div>
         )}
+
 
         {/* --- Disabled parents BELOW Processes --- */}
         {[
