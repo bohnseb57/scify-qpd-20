@@ -147,7 +147,7 @@ export function AppSidebar() {
           <div
             key={label}
             className={cn(
-              "mx-2 mt-2 flex items-center rounded-lg px-3 py-1 text-sm font-medium",
+              "mx-2 flex items-center rounded-lg px-3 py-1 text-sm font-medium",
               "text-muted-foreground opacity-60 cursor-not-allowed",
               collapsed && "justify-center"
             )}
@@ -169,7 +169,7 @@ export function AppSidebar() {
           tabIndex={0}
           aria-expanded={collapsed ? undefined : processesOpen}
           className={cn(
-            "mx-2 mt-2 group flex items-center rounded-md px-3 text-sm font-medium cursor-pointer select-none",
+            "mx-2 group flex items-center rounded-md px-3 text-sm font-medium cursor-pointer select-none",
             "text-foreground",
             collapsed && "justify-center"
           )}
@@ -298,13 +298,13 @@ export function AppSidebar() {
 
         {/* --- Disabled parents BELOW Processes --- */}
         {[
-          { Icon: Monitor, label: "Monitoring" },
+          { Icon: Monitor, label: "BarChart3" },
           { Icon: Settings, label: "Admin" },
         ].map(({ Icon, label }) => (
           <div
             key={label}
             className={cn(
-              "mx-2 mt-1 flex items-center rounded-lg px-3 py-1 text-sm font-medium",
+              "mx-2 flex items-center rounded-lg px-3 py-1 text-sm font-medium",
               "text-muted-foreground opacity-60 cursor-not-allowed",
               collapsed && "justify-center"
             )}
