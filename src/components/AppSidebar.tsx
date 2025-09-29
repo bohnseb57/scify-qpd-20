@@ -206,7 +206,7 @@ export function AppSidebar() {
 
         {/* --- Children (expanded mode only) with section headers --- */}
         {!collapsed && processesOpen && (
-          <div className="mt-1 space-y-2">
+          <div className="space-y-2">
             {/* Overview */}
             <SidebarGroup className="pt-1">
               <SidebarGroupLabel>Overview</SidebarGroupLabel>
@@ -220,7 +220,7 @@ export function AppSidebar() {
                     >
                       <button
                         onClick={handleDashboard}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-1"
                       >
                         <ClipboardList className="h-4 w-4" />
                         <span>Dashboard</span>
@@ -245,7 +245,7 @@ export function AppSidebar() {
                       >
                         <button
                           onClick={() => handleProcessClick(process.id)}
-                          className="flex w-full items-center gap-2"
+                          className="flex w-full items-center gap-1"
                         >
                           <FileText className="h-4 w-4" />
                           <span className="flex-1 truncate">{process.name}</span>
@@ -271,7 +271,7 @@ export function AppSidebar() {
                       isActive={isActive("/create-process")}
                       className="pl-10"
                     >
-                      <button onClick={handleCreateProcess} className="flex items-center gap-2">
+                      <button onClick={handleCreateProcess} className="flex items-center gap-1">
                         <Plus className="h-4 w-4" />
                         <span>Create Process</span>
                       </button>
@@ -284,7 +284,7 @@ export function AppSidebar() {
                       isActive={isActive("/process-config")}
                       className="pl-10"
                     >
-                      <button onClick={() => navigate("/process-config")} className="flex items-center gap-2">
+                      <button onClick={() => navigate("/process-config")} className="flex items-center gap-1">
                         <Settings className="h-4 w-4" />
                         <span>Manage Processes</span>
                       </button>
