@@ -52,6 +52,27 @@ export default function CreateProcess() {
         }
       }
 
+      // Create workflow steps
+      if (processData.workflow.length > 0) {
+        const workflowToInsert = processData.workflow.map((step, index) => ({
+          process_id: process.id,
+          step_name: step.step_name,
+          step_order: index + 1,
+          required_role: step.required_role,
+          can_approve: true,
+          can_reject: true,
+        }));
+
+        const { error: workflowError } = await supabase
+          .from('workflow_steps')
+          .insert(workflowToInsert);
+
+        if (workflowError) {
+          console.error('Error creating workflow steps:', workflowError);
+          toast.error('Process created but failed to save workflow steps');
+        }
+      }
+
       toast.success('Process created successfully!');
       navigate("/");
     } catch (error) {
