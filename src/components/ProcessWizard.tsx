@@ -37,177 +37,48 @@ export function ProcessWizard({ onComplete, onCancel }: ProcessWizardProps) {
 
     setIsGenerating(true);
     
-    // Simulate AI generation based on description keywords
-    setTimeout(() => {
-      const mockGeneration = simulateAIGeneration(processName, processDescription);
-      setGeneratedFields(mockGeneration.suggested_fields);
-      setGeneratedWorkflow(mockGeneration.suggested_workflow);
-      setAiExplanation(mockGeneration.ai_explanation);
+    try {
+      // Call Lovable AI via edge function
+      const response = await fetch(
+        'https://kdhjhmldzfyhylzzgbsc.supabase.co/functions/v1/generate-process',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: processName,
+            description: processDescription
+          })
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          toast.error("Rate limits exceeded. Please try again in a moment.");
+          return;
+        }
+        if (response.status === 402) {
+          toast.error("AI credits exhausted. Please add credits to continue.");
+          return;
+        }
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      setGeneratedFields(result.suggested_fields);
+      setGeneratedWorkflow(result.suggested_workflow);
+      setAiExplanation(result.ai_explanation);
       setStep(2);
+      
+      toast.success("AI process structure generated successfully!");
+    } catch (error) {
+      console.error('Error generating process structure:', error);
+      toast.error("Failed to generate process structure. Please try again.");
+    } finally {
       setIsGenerating(false);
-    }, 2000);
-  };
-
-  const simulateAIGeneration = (name: string, description: string): {
-    suggested_fields: GeneratedField[];
-    suggested_workflow: GeneratedWorkflow[];
-    ai_explanation: string;
-  } => {
-    const lowerDesc = description.toLowerCase();
-    const fields: GeneratedField[] = [];
-    const workflow: GeneratedWorkflow[] = [];
-
-    // Common base fields
-    fields.push({
-      field_name: "title",
-      field_label: "Title",
-      field_type: "text",
-      is_required: true,
-      reason: "Essential for identifying the record"
-    });
-
-    fields.push({
-      field_name: "description",
-      field_label: "Description",
-      field_type: "textarea",
-      is_required: true,
-      reason: "Detailed information about the item"
-    });
-
-    // Context-specific fields based on keywords
-    if (lowerDesc.includes("capa") || lowerDesc.includes("corrective") || lowerDesc.includes("preventive")) {
-      fields.push(
-        {
-          field_name: "severity",
-          field_label: "Severity Level",
-          field_type: "select",
-          is_required: true,
-          field_options: ["Low", "Medium", "High", "Critical"],
-          reason: "CAPA processes require severity classification"
-        },
-        {
-          field_name: "root_cause",
-          field_label: "Root Cause Analysis",
-          field_type: "textarea",
-          is_required: false,
-          reason: "Essential for effective corrective actions"
-        },
-        {
-          field_name: "corrective_action",
-          field_label: "Corrective Action Plan",
-          field_type: "textarea",
-          is_required: false,
-          reason: "Define specific actions to address the issue"
-        }
-      );
     }
-
-    if (lowerDesc.includes("audit") || lowerDesc.includes("inspection")) {
-      fields.push(
-        {
-          field_name: "audit_area",
-          field_label: "Audit Area",
-          field_type: "select",
-          is_required: true,
-          field_options: ["Manufacturing", "Quality Control", "Documentation", "Facilities"],
-          reason: "Audits need to specify the area being evaluated"
-        },
-        {
-          field_name: "findings",
-          field_label: "Audit Findings",
-          field_type: "textarea",
-          is_required: false,
-          reason: "Document observations and non-conformances"
-        }
-      );
-    }
-
-    if (lowerDesc.includes("deviation") || lowerDesc.includes("non-conformance")) {
-      fields.push(
-        {
-          field_name: "impact_assessment",
-          field_label: "Impact Assessment",
-          field_type: "textarea",
-          is_required: true,
-          reason: "Evaluate potential impact on product quality"
-        },
-        {
-          field_name: "immediate_action",
-          field_label: "Immediate Action Taken",
-          field_type: "textarea",
-          is_required: false,
-          reason: "Document immediate containment actions"
-        }
-      );
-    }
-
-    // Add target completion date for most processes
-    fields.push({
-      field_name: "target_completion",
-      field_label: "Target Completion Date",
-      field_type: "date",
-      is_required: false,
-      reason: "Help track timeline and accountability"
-    });
-
-    // Generate workflow based on process type
-    if (lowerDesc.includes("capa") || lowerDesc.includes("deviation")) {
-      workflow.push(
-        {
-          step_name: "Initial Review",
-          required_role: "quality_reviewer",
-          reason: "Quality team evaluates the submission"
-        },
-        {
-          step_name: "Investigation",
-          required_role: "quality_reviewer", 
-          reason: "Detailed analysis and root cause investigation"
-        },
-        {
-          step_name: "Final Approval",
-          required_role: "qa_final_approver",
-          reason: "Senior QA approval for implementation"
-        }
-      );
-    } else if (lowerDesc.includes("audit")) {
-      workflow.push(
-        {
-          step_name: "Planning Review",
-          required_role: "quality_manager",
-          reason: "Review audit scope and methodology"
-        },
-        {
-          step_name: "Findings Review",
-          required_role: "quality_reviewer",
-          reason: "Evaluate audit findings and recommendations"
-        },
-        {
-          step_name: "Final Approval",
-          required_role: "qa_final_approver",
-          reason: "Approve audit completion and follow-up actions"
-        }
-      );
-    } else {
-      // Generic workflow
-      workflow.push(
-        {
-          step_name: "Review",
-          required_role: "quality_reviewer",
-          reason: "Initial quality review"
-        },
-        {
-          step_name: "Approval",
-          required_role: "quality_manager",
-          reason: "Management approval for completion"
-        }
-      );
-    }
-
-    return {
-      suggested_fields: fields,
-      suggested_workflow: workflow,
-      ai_explanation: `Based on your process description, I've identified this as a ${lowerDesc.includes("capa") ? "CAPA" : lowerDesc.includes("audit") ? "audit" : "quality"} process. I've suggested fields commonly required for this type of process in life sciences organizations, following industry best practices for regulatory compliance.`
-    };
   };
 
   const removeField = (index: number) => {
