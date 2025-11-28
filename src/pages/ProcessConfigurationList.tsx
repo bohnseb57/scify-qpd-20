@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Settings, Edit, Eye, Trash2 } from "lucide-react";
+import { Plus, Settings, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,6 +36,23 @@ export default function ProcessConfigurationList() {
       setIsLoading(false);
     }
   };
+
+  const handleDeleteProcess = async (processId: string) => {
+    try {
+      const { error } = await supabase.from('processes').delete().eq('id', processId);
+      if (error) {
+        console.error('Error deleting process:', error);
+        toast.error('Failed to delete process');
+        return;
+      }
+      toast.success('Process deleted successfully');
+      loadProcesses();
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete process');
+    }
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-gradient-subtle p-6">
         <div className="max-w-7xl mx-auto">
@@ -102,10 +120,6 @@ export default function ProcessConfigurationList() {
                       <TableCell>{new Date(process.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" onClick={() => navigate(`/process/${process.id}`)}>
-                            <Eye className="h-4 w-4" />
-                            View
-                          </Button>
                           <Button variant="outline" size="sm" onClick={() => navigate(`/process-config/${process.id}`)}>
                             <Settings className="h-4 w-4" />
                             Configure
@@ -118,6 +132,28 @@ export default function ProcessConfigurationList() {
                             <Settings className="h-4 w-4" />
                             Workflow
                           </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Process</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{process.name}"? This action cannot be undone and will remove all associated fields, workflow steps, and records.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteProcess(process.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>)}
