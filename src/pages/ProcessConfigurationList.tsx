@@ -1,20 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Settings, Trash2 } from "lucide-react";
+import { Plus, Settings, Edit, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -44,22 +33,6 @@ export default function ProcessConfigurationList() {
       toast.error('Failed to load processes');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDeleteProcess = async (processId: string, processName: string) => {
-    try {
-      const { error } = await supabase.from('processes').delete().eq('id', processId);
-      if (error) {
-        console.error('Error deleting process:', error);
-        toast.error('Failed to delete process');
-        return;
-      }
-      setProcesses(processes.filter(p => p.id !== processId));
-      toast.success(`Process "${processName}" deleted successfully`);
-    } catch (error) {
-      console.error('Delete process error:', error);
-      toast.error('Failed to delete process');
     }
   };
   if (isLoading) {
@@ -114,7 +87,7 @@ export default function ProcessConfigurationList() {
                     <TableHead>Description</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -128,30 +101,24 @@ export default function ProcessConfigurationList() {
                       </TableCell>
                       <TableCell>{new Date(process.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Process</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{process.name}"? This action cannot be undone and will also delete all associated fields and workflow steps.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => handleDeleteProcess(process.id, process.name)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => navigate(`/process/${process.id}`)}>
+                            <Eye className="h-4 w-4" />
+                            View
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => navigate(`/process-config/${process.id}`)}>
+                            <Settings className="h-4 w-4" />
+                            Configure
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => navigate(`/process-config/${process.id}/fields`)}>
+                            <Edit className="h-4 w-4" />
+                            Fields
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => navigate(`/process-config/${process.id}/workflow`)}>
+                            <Settings className="h-4 w-4" />
+                            Workflow
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>)}
                 </TableBody>
