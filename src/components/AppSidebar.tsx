@@ -52,6 +52,26 @@ export function AppSidebar() {
 
   useEffect(() => {
     loadProcesses();
+
+    // Subscribe to realtime changes on processes table
+    const channel = supabase
+      .channel('processes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'processes'
+        },
+        () => {
+          loadProcesses();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadProcesses = async () => {
