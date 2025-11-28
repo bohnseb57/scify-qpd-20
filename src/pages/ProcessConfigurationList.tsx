@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Settings, Edit, Eye, Trash2 } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -87,7 +87,6 @@ export default function ProcessConfigurationList() {
                     <TableHead>Description</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
-                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -100,26 +99,6 @@ export default function ProcessConfigurationList() {
                         </span>
                       </TableCell>
                       <TableCell>{new Date(process.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" onClick={() => navigate(`/process/${process.id}`)}>
-                            <Eye className="h-4 w-4" />
-                            View
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => navigate(`/process-config/${process.id}`)}>
-                            <Settings className="h-4 w-4" />
-                            Configure
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => navigate(`/process-config/${process.id}/fields`)}>
-                            <Edit className="h-4 w-4" />
-                            Fields
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => navigate(`/process-config/${process.id}/workflow`)}>
-                            <Settings className="h-4 w-4" />
-                            Workflow
-                          </Button>
-                        </div>
-                      </TableCell>
                     </TableRow>)}
                 </TableBody>
               </Table>}
