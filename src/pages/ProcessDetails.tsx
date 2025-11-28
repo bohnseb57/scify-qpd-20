@@ -64,18 +64,15 @@ export default function ProcessDetails() {
         console.error('Error loading records:', recordsError);
       } else {
         setRecords(recordsData || []);
-        
+
         // Load Title field values for records if we have records
         if (recordsData && recordsData.length > 0) {
           const titleField = (fieldsData || []).find(f => f.field_label === 'Title');
           if (titleField) {
             const recordIds = recordsData.map(r => r.id);
-            const { data: titleValues } = await supabase
-              .from('record_field_values')
-              .select('record_id, field_value')
-              .eq('field_id', titleField.id)
-              .in('record_id', recordIds);
-            
+            const {
+              data: titleValues
+            } = await supabase.from('record_field_values').select('record_id, field_value').eq('field_id', titleField.id).in('record_id', recordIds);
             if (titleValues) {
               const titleMap: Record<string, string> = {};
               titleValues.forEach(tv => {
@@ -97,7 +94,6 @@ export default function ProcessDetails() {
     setShowGuidedCreation(false);
     loadProcessDetails();
   };
-  
   const handleGuidedCreationCancel = () => {
     setShowGuidedCreation(false);
   };
@@ -122,31 +118,19 @@ export default function ProcessDetails() {
         </div>
       </div>;
   }
-
   if (showGuidedCreation && process) {
-    return (
-      <GuidedRecordCreation
-        processId={process.id}
-        processName={process.name}
-        onComplete={handleGuidedCreationComplete}
-        onCancel={handleGuidedCreationCancel}
-      />
-    );
+    return <GuidedRecordCreation processId={process.id} processName={process.name} onComplete={handleGuidedCreationComplete} onCancel={handleGuidedCreationCancel} />;
   }
-
   return <div className="bg-gradient-subtle min-h-full">
       <div className="border-b bg-background/95 backdrop-blur">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">{process.name}</h1>
-              <p className="text-muted-foreground">{process.description}</p>
+              
             </div>
             <div className="flex gap-2">
-              <Button 
-                onClick={() => setShowGuidedCreation(true)} 
-                className="bg-gradient-primary hover:bg-primary-hover transition-smooth"
-              >
+              <Button onClick={() => setShowGuidedCreation(true)} className="bg-gradient-primary hover:bg-primary-hover transition-smooth">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Record
               </Button>
