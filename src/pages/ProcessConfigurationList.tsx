@@ -111,7 +111,7 @@ export default function ProcessConfigurationList() {
                 <TableBody>
                   {processes.map(process => <TableRow key={process.id}>
                       <TableCell className="font-medium">{process.name}</TableCell>
-                      <TableCell className="max-w-md truncate">{process.description}</TableCell>
+                      <TableCell className="max-w-md whitespace-normal">{process.description}</TableCell>
                       <TableCell>
                         <span className={`inline-flex px-2 py-1 text-xs rounded-full ${process.is_active ? 'bg-success/20 text-success' : 'bg-muted text-muted-foreground'}`}>
                           {process.is_active ? 'Active' : 'Inactive'}
