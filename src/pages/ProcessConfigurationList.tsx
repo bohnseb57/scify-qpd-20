@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Settings, Edit, Trash2 } from "lucide-react";
+import { Plus, Settings, Edit, Trash2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -102,6 +103,7 @@ export default function ProcessConfigurationList() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
+                    <TableHead>Tag</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
@@ -111,6 +113,16 @@ export default function ProcessConfigurationList() {
                 <TableBody>
                   {processes.map(process => <TableRow key={process.id}>
                       <TableCell className="font-medium">{process.name}</TableCell>
+                      <TableCell>
+                        {process.tag ? (
+                          <Badge variant="secondary" className="gap-1">
+                            <Tag className="h-3 w-3" />
+                            {process.tag}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="max-w-md whitespace-normal">{process.description}</TableCell>
                       <TableCell>
                         <span className={`inline-flex px-2 py-1 text-xs rounded-full ${process.is_active ? 'bg-success/20 text-success' : 'bg-muted text-muted-foreground'}`}>
