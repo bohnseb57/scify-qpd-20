@@ -34,6 +34,7 @@ export interface Process {
   description: string;
   ai_suggestion?: string;
   tag?: string;
+  record_id_prefix?: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -46,6 +47,7 @@ export interface ProcessRecord {
   id: string;
   process_id: string;
   record_title: string;
+  record_identifier?: string;
   current_status: WorkflowStatus;
   current_step_id?: string;
   created_by: string;

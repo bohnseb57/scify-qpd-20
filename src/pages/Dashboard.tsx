@@ -334,7 +334,7 @@ export default function Dashboard() {
                       <div className="flex-1">
                         <h3 className="font-semibold text-sm">{record.record_title}</h3>
                         <p className="text-xs text-muted-foreground">
-                          CA-{String(record.created_at).slice(-8, -4)} • {record.process?.name || 'Unknown Process'} • {new Date(record.created_at).toLocaleDateString()}
+                          {record.record_identifier || `REC-${String(record.created_at).slice(-8, -4)}`} • {record.process?.name || 'Unknown Process'} • {new Date(record.created_at).toLocaleDateString()}
                         </p>
                         
                         {/* Mock task summary for CAPA records */}

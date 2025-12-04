@@ -34,7 +34,8 @@ export default function ProcessConfiguration() {
     description: "",
     is_active: true,
     ai_suggestion: "",
-    tag: ""
+    tag: "",
+    record_id_prefix: ""
   });
   const [tagOpen, setTagOpen] = useState(false);
   const [customTags, setCustomTags] = useState<string[]>([]);
@@ -68,7 +69,8 @@ export default function ProcessConfiguration() {
         description: data.description || "",
         is_active: data.is_active || true,
         ai_suggestion: data.ai_suggestion || "",
-        tag: data.tag || ""
+        tag: data.tag || "",
+        record_id_prefix: data.record_id_prefix || ""
       });
       // If data has a custom tag not in predefined list, add it
       if (data.tag && !PREDEFINED_TAGS.includes(data.tag)) {
@@ -98,7 +100,8 @@ export default function ProcessConfiguration() {
           description: formData.description.trim(),
           is_active: formData.is_active,
           ai_suggestion: formData.ai_suggestion.trim() || null,
-          tag: formData.tag.trim() || null
+          tag: formData.tag.trim() || null,
+          record_id_prefix: formData.record_id_prefix.trim().toUpperCase() || null
         })
         .eq('id', id);
 
@@ -220,6 +223,20 @@ export default function ProcessConfiguration() {
                   placeholder="Describe the purpose and scope of this process"
                   rows={4}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="record_id_prefix">Record ID Prefix</Label>
+                <Input
+                  id="record_id_prefix"
+                  value={formData.record_id_prefix}
+                  onChange={(e) => setFormData(prev => ({ ...prev, record_id_prefix: e.target.value.toUpperCase() }))}
+                  placeholder="e.g., CA, NCR, DEV"
+                  maxLength={10}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Records will be identified as {formData.record_id_prefix || 'REC'}-XXXX
+                </p>
               </div>
 
               <div className="space-y-2">
