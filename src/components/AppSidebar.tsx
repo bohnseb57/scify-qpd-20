@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FileText, Settings, Plus, Building2, ClipboardList, BookOpen, GraduationCap, Monitor, BarChart3, ChevronRight, LockKeyhole, Workflow } from "lucide-react";
+import { FileText, Settings, Plus, Building2, ClipboardList, BookOpen, GraduationCap, Monitor, BarChart3, ChevronRight, LockKeyhole, Workflow, Tag } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarSeparator, SidebarMenuBadge, useSidebar } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { Process } from "@/types/qpd";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,26 @@ export function AppSidebar() {
     left: number;
   } | null>(null);
   const hoverHideTimer = useRef<number | null>(null);
+  const [openTags, setOpenTags] = useState<Record<string, boolean>>({});
+
+  // Group processes by tag
+  const groupedProcesses = useMemo(() => {
+    const groups: Record<string, Process[]> = {};
+    const untagged: Process[] = [];
+
+    processes.forEach((process) => {
+      if (process.tag) {
+        if (!groups[process.tag]) {
+          groups[process.tag] = [];
+        }
+        groups[process.tag].push(process);
+      } else {
+        untagged.push(process);
+      }
+    });
+
+    return { groups, untagged };
+  }, [processes]);
   useEffect(() => {
     loadProcesses();
 
@@ -181,12 +202,72 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
         
-            {/* Quality Processes */}
+            {/* Quality Processes - Grouped by Tag */}
             <SidebarGroup>
               <SidebarGroupLabel className="pl-6">Quality Processes</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {processes.map(process => <SidebarMenuItem key={process.id}>
+                  {/* Render tagged groups */}
+                  {Object.entries(groupedProcesses.groups).map(([tag, tagProcesses]) => {
+                    // If only one process with this tag, render directly
+                    if (tagProcesses.length === 1) {
+                      const process = tagProcesses[0];
+                      return (
+                        <SidebarMenuItem key={process.id}>
+                          <SidebarMenuButton asChild isActive={isActive(`/process/${process.id}`)} className="pl-6">
+                            <button onClick={() => handleProcessClick(process.id)} className="flex w-full items-center gap-1">
+                              <FileText className="h-4 w-4" />
+                              <span className="flex-1 truncate">{process.name}</span>
+                              <SidebarMenuBadge>
+                                {recordCounts[process.id] ?? 0}
+                              </SidebarMenuBadge>
+                            </button>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    }
+
+                    // Multiple processes with same tag - render collapsible group
+                    return (
+                      <Collapsible
+                        key={tag}
+                        open={openTags[tag] ?? false}
+                        onOpenChange={(open) => setOpenTags(prev => ({ ...prev, [tag]: open }))}
+                      >
+                        <SidebarMenuItem>
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuButton className="pl-6">
+                              <Tag className="h-4 w-4" />
+                              <span className="flex-1 truncate">{tag}</span>
+                              <ChevronRight className={cn(
+                                "h-4 w-4 transition-transform",
+                                openTags[tag] && "rotate-90"
+                              )} />
+                            </SidebarMenuButton>
+                          </CollapsibleTrigger>
+                        </SidebarMenuItem>
+                        <CollapsibleContent>
+                          {tagProcesses.map(process => (
+                            <SidebarMenuItem key={process.id}>
+                              <SidebarMenuButton asChild isActive={isActive(`/process/${process.id}`)} className="pl-10">
+                                <button onClick={() => handleProcessClick(process.id)} className="flex w-full items-center gap-1">
+                                  <FileText className="h-4 w-4" />
+                                  <span className="flex-1 truncate">{process.name}</span>
+                                  <SidebarMenuBadge>
+                                    {recordCounts[process.id] ?? 0}
+                                  </SidebarMenuBadge>
+                                </button>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    );
+                  })}
+
+                  {/* Render untagged processes directly */}
+                  {groupedProcesses.untagged.map(process => (
+                    <SidebarMenuItem key={process.id}>
                       <SidebarMenuButton asChild isActive={isActive(`/process/${process.id}`)} className="pl-6">
                         <button onClick={() => handleProcessClick(process.id)} className="flex w-full items-center gap-1">
                           <FileText className="h-4 w-4" />
@@ -196,7 +277,8 @@ export function AppSidebar() {
                           </SidebarMenuBadge>
                         </button>
                       </SidebarMenuButton>
-                    </SidebarMenuItem>)}
+                    </SidebarMenuItem>
+                  ))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -269,16 +351,55 @@ export function AppSidebar() {
               Dashboard
             </button>
 
-            {/* Processes */}
-            {processes.map(process => <button key={process.id} onClick={() => {
-          setHoverOpen(false);
-          handleProcessClick(process.id);
-        }} className={cn("flex w-full items-center justify-between px-3 py-2 text-sm rounded-md", isActive(`/process/${process.id}`) ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground")}>
+            {/* Processes - grouped by tag in hover popover */}
+            {Object.entries(groupedProcesses.groups).map(([tag, tagProcesses]) => (
+              <div key={tag}>
+                {tagProcesses.length > 1 && (
+                  <div className="px-3 py-1 text-xs font-medium text-muted-foreground">{tag}</div>
+                )}
+                {tagProcesses.map(process => (
+                  <button
+                    key={process.id}
+                    onClick={() => {
+                      setHoverOpen(false);
+                      handleProcessClick(process.id);
+                    }}
+                    className={cn(
+                      "flex w-full items-center justify-between px-3 py-2 text-sm rounded-md",
+                      tagProcesses.length > 1 && "pl-5",
+                      isActive(`/process/${process.id}`)
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <span className="truncate">{process.name}</span>
+                    <span className="ml-3 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
+                      {recordCounts[process.id] ?? 0}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {groupedProcesses.untagged.map(process => (
+              <button
+                key={process.id}
+                onClick={() => {
+                  setHoverOpen(false);
+                  handleProcessClick(process.id);
+                }}
+                className={cn(
+                  "flex w-full items-center justify-between px-3 py-2 text-sm rounded-md",
+                  isActive(`/process/${process.id}`)
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                )}
+              >
                 <span className="truncate">{process.name}</span>
                 <span className="ml-3 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
                   {recordCounts[process.id] ?? 0}
                 </span>
-              </button>)}
+              </button>
+            ))}
 
             <SidebarSeparator className="my-1" />
 

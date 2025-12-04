@@ -33,6 +33,7 @@ export interface Process {
   name: string;
   description: string;
   ai_suggestion?: string;
+  tag?: string;
   created_by: string;
   created_at: string;
   updated_at: string;

@@ -1,15 +1,27 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Settings, Edit } from "lucide-react";
+import { ArrowLeft, Save, Settings, Edit, Tag, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const PREDEFINED_TAGS = [
+  "Quality Events",
+  "Change Management",
+  "Compliance",
+  "Safety",
+  "Document Control",
+  "Risk Management",
+];
 
 export default function ProcessConfiguration() {
   const { id } = useParams<{ id: string }>();
@@ -21,8 +33,11 @@ export default function ProcessConfiguration() {
     name: "",
     description: "",
     is_active: true,
-    ai_suggestion: ""
+    ai_suggestion: "",
+    tag: ""
   });
+  const [tagOpen, setTagOpen] = useState(false);
+  const [customTags, setCustomTags] = useState<string[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -52,8 +67,13 @@ export default function ProcessConfiguration() {
         name: data.name || "",
         description: data.description || "",
         is_active: data.is_active || true,
-        ai_suggestion: data.ai_suggestion || ""
+        ai_suggestion: data.ai_suggestion || "",
+        tag: data.tag || ""
       });
+      // If data has a custom tag not in predefined list, add it
+      if (data.tag && !PREDEFINED_TAGS.includes(data.tag)) {
+        setCustomTags([data.tag]);
+      }
     } catch (error) {
       console.error('Process load error:', error);
       toast.error('Failed to load process');
@@ -77,7 +97,8 @@ export default function ProcessConfiguration() {
           name: formData.name.trim(),
           description: formData.description.trim(),
           is_active: formData.is_active,
-          ai_suggestion: formData.ai_suggestion.trim() || null
+          ai_suggestion: formData.ai_suggestion.trim() || null,
+          tag: formData.tag.trim() || null
         })
         .eq('id', id);
 
@@ -199,6 +220,103 @@ export default function ProcessConfiguration() {
                   placeholder="Describe the purpose and scope of this process"
                   rows={4}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tag">Tag</Label>
+                <Popover open={tagOpen} onOpenChange={setTagOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={tagOpen}
+                      className="w-full justify-between"
+                    >
+                      {formData.tag || "Select or enter a tag..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 bg-popover" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search or create tag..." 
+                        onValueChange={(value) => {
+                          // Allow custom input
+                          if (value && !PREDEFINED_TAGS.includes(value) && !customTags.includes(value)) {
+                            setFormData(prev => ({ ...prev, tag: value }));
+                          }
+                        }}
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          <button
+                            className="w-full px-2 py-1.5 text-sm text-left hover:bg-accent rounded"
+                            onClick={() => {
+                              const input = document.querySelector('[cmdk-input]') as HTMLInputElement;
+                              if (input?.value) {
+                                const newTag = input.value.trim();
+                                if (newTag && !customTags.includes(newTag)) {
+                                  setCustomTags(prev => [...prev, newTag]);
+                                }
+                                setFormData(prev => ({ ...prev, tag: newTag }));
+                                setTagOpen(false);
+                              }
+                            }}
+                          >
+                            Create new tag
+                          </button>
+                        </CommandEmpty>
+                        <CommandGroup heading="Predefined Tags">
+                          {PREDEFINED_TAGS.map((tag) => (
+                            <CommandItem
+                              key={tag}
+                              value={tag}
+                              onSelect={(currentValue) => {
+                                setFormData(prev => ({ ...prev, tag: currentValue === formData.tag ? "" : currentValue }));
+                                setTagOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.tag === tag ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <Tag className="mr-2 h-4 w-4 text-muted-foreground" />
+                              {tag}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                        {customTags.length > 0 && (
+                          <CommandGroup heading="Custom Tags">
+                            {customTags.map((tag) => (
+                              <CommandItem
+                                key={tag}
+                                value={tag}
+                                onSelect={(currentValue) => {
+                                  setFormData(prev => ({ ...prev, tag: currentValue === formData.tag ? "" : currentValue }));
+                                  setTagOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    formData.tag === tag ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <Tag className="mr-2 h-4 w-4 text-muted-foreground" />
+                                {tag}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground">
+                  Tags help organize processes in the navigation sidebar
+                </p>
               </div>
 
               <div className="flex items-center space-x-2">
