@@ -70,6 +70,7 @@ export type Database = {
           current_step_id: string | null
           id: string
           process_id: string
+          record_identifier: string | null
           record_title: string
           updated_at: string
         }
@@ -81,6 +82,7 @@ export type Database = {
           current_step_id?: string | null
           id?: string
           process_id: string
+          record_identifier?: string | null
           record_title: string
           updated_at?: string
         }
@@ -92,6 +94,7 @@ export type Database = {
           current_step_id?: string | null
           id?: string
           process_id?: string
+          record_identifier?: string | null
           record_title?: string
           updated_at?: string
         }
@@ -121,6 +124,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          record_id_prefix: string | null
           tag: string | null
           updated_at: string
         }
@@ -132,6 +136,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          record_id_prefix?: string | null
           tag?: string | null
           updated_at?: string
         }
@@ -143,6 +148,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          record_id_prefix?: string | null
           tag?: string | null
           updated_at?: string
         }

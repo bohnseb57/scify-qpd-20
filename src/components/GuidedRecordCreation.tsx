@@ -40,11 +40,22 @@ interface StepInfo {
   icon: React.ReactNode;
 }
 
+// Generate a short alphanumeric code (4 chars)
+const generateShortCode = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude confusing chars like 0/O, 1/I
+  let code = '';
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
+
 export function GuidedRecordCreation({ processId, processName, discoveryAnswers, onComplete, onCancel }: GuidedRecordCreationProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [process, setProcess] = useState<Process | null>(null);
   const [fields, setFields] = useState<ProcessField[]>([]);
   const [recordTitle, setRecordTitle] = useState("");
+  const [recordIdentifier, setRecordIdentifier] = useState("");
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,6 +125,11 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
 
       if (processError) throw processError;
       setProcess(processData);
+      
+      // Generate record identifier using prefix from process settings
+      const prefix = processData.record_id_prefix || 'REC';
+      const shortCode = generateShortCode();
+      setRecordIdentifier(`${prefix}-${shortCode}`);
 
       // Load process fields
       const { data: fieldsData, error: fieldsError } = await supabase
@@ -281,6 +297,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
         .insert({
           process_id: processId,
           record_title: recordTitle,
+          record_identifier: recordIdentifier,
           created_by: "00000000-0000-0000-0000-000000000000", // Demo UUID
           current_status: 'draft'
         })
@@ -459,6 +476,17 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
 
             {currentStep === 1 && (
               <div className="space-y-4">
+                {/* Record Identifier - Auto-generated */}
+                <div className="bg-muted/50 border rounded-lg p-4 mb-4">
+                  <Label className="text-sm font-medium text-muted-foreground">Record ID (Auto-generated)</Label>
+                  <div className="text-2xl font-mono font-bold text-foreground mt-1">
+                    {recordIdentifier}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This identifier is automatically generated and will be used to track this record
+                  </p>
+                </div>
+                
                 <div>
                   <Label htmlFor="record-title" className="text-base font-medium">
                     Record Title <span className="text-destructive">*</span>

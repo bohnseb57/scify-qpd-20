@@ -236,7 +236,7 @@ export default function RecordDetails() {
                 <div className="flex items-center gap-2">
                   <p className="text-muted-foreground">{process.name}</p>
                   <Badge variant="outline" className="text-xs">
-                    CA-{String(record.created_at).slice(-8, -4)}
+                    {record.record_identifier || `REC-${String(record.created_at).slice(-8, -4)}`}
                   </Badge>
                 </div>
               </div>
