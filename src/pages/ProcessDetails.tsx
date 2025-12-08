@@ -9,6 +9,7 @@ import { GuidedRecordCreation } from "@/components/GuidedRecordCreation";
 import { Process, ProcessRecord, ProcessField, RecordFieldValue } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { transformProcessData } from "@/utils/processHelpers";
 export default function ProcessDetails() {
   const {
     id
@@ -40,7 +41,7 @@ export default function ProcessDetails() {
         toast.error('Failed to load process details');
         return;
       }
-      setProcess(processData);
+      setProcess(transformProcessData(processData));
 
       // Load process fields
       const {

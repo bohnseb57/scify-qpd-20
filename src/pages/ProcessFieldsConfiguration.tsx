@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Process, ProcessField, FieldType } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { transformProcessData } from "@/utils/processHelpers";
 
 export default function ProcessFieldsConfiguration() {
   const { id } = useParams<{ id: string }>();
@@ -53,7 +54,7 @@ export default function ProcessFieldsConfiguration() {
         return;
       }
 
-      setProcess(processData);
+      setProcess(transformProcessData(processData));
 
       // Load fields
       const { data: fieldsData, error: fieldsError } = await supabase

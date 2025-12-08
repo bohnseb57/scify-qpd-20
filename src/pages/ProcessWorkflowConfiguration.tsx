@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Process, WorkflowStep } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { transformProcessData } from "@/utils/processHelpers";
 
 interface WorkflowStepForm {
   id?: string;
@@ -59,7 +60,7 @@ export default function ProcessWorkflowConfiguration() {
         return;
       }
 
-      setProcess(processData);
+      setProcess(transformProcessData(processData));
 
       // Load workflow steps
       const { data: stepsData, error: stepsError } = await supabase

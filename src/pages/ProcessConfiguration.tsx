@@ -13,6 +13,7 @@ import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { transformProcessData } from "@/utils/processHelpers";
 
 const PREDEFINED_TAGS = [
   "Quality Events",
@@ -35,7 +36,8 @@ export default function ProcessConfiguration() {
     is_active: true,
     ai_suggestion: "",
     tag: "",
-    record_id_prefix: ""
+    record_id_prefix: "",
+    tasks_enabled: true
   });
   const [tagOpen, setTagOpen] = useState(false);
   const [customTags, setCustomTags] = useState<string[]>([]);
@@ -63,14 +65,16 @@ export default function ProcessConfiguration() {
         return;
       }
 
-      setProcess(data);
+      setProcess(transformProcessData(data));
+      const subEntityConfig = data.sub_entity_config as { tasks_enabled?: boolean } | null;
       setFormData({
         name: data.name || "",
         description: data.description || "",
         is_active: data.is_active || true,
         ai_suggestion: data.ai_suggestion || "",
         tag: data.tag || "",
-        record_id_prefix: data.record_id_prefix || ""
+        record_id_prefix: data.record_id_prefix || "",
+        tasks_enabled: subEntityConfig?.tasks_enabled ?? true
       });
       // If data has a custom tag not in predefined list, add it
       if (data.tag && !PREDEFINED_TAGS.includes(data.tag)) {
@@ -101,7 +105,8 @@ export default function ProcessConfiguration() {
           is_active: formData.is_active,
           ai_suggestion: formData.ai_suggestion.trim() || null,
           tag: formData.tag.trim() || null,
-          record_id_prefix: formData.record_id_prefix.trim().toUpperCase() || null
+          record_id_prefix: formData.record_id_prefix.trim().toUpperCase() || null,
+          sub_entity_config: { tasks_enabled: formData.tasks_enabled }
         })
         .eq('id', id);
 
@@ -343,6 +348,30 @@ export default function ProcessConfiguration() {
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                 />
                 <Label htmlFor="is_active">Process is active</Label>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-elegant">
+            <CardHeader>
+              <CardTitle>Sub-Entities</CardTitle>
+              <CardDescription>
+                Configure which sub-entities are available for records in this process
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="space-y-0.5">
+                  <Label htmlFor="tasks_enabled" className="text-base font-medium">Task Management</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Allow users to create and assign tasks when creating records
+                  </p>
+                </div>
+                <Switch
+                  id="tasks_enabled"
+                  checked={formData.tasks_enabled}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, tasks_enabled: checked }))}
+                />
               </div>
             </CardContent>
           </Card>

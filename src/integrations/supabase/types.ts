@@ -125,6 +125,7 @@ export type Database = {
           is_active: boolean
           name: string
           record_id_prefix: string | null
+          sub_entity_config: Json | null
           tag: string | null
           updated_at: string
         }
@@ -137,6 +138,7 @@ export type Database = {
           is_active?: boolean
           name: string
           record_id_prefix?: string | null
+          sub_entity_config?: Json | null
           tag?: string | null
           updated_at?: string
         }
@@ -149,6 +151,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           record_id_prefix?: string | null
+          sub_entity_config?: Json | null
           tag?: string | null
           updated_at?: string
         }
