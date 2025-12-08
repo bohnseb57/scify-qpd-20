@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { transformProcessArray } from "@/utils/processHelpers";
 export default function ProcessConfigurationList() {
   const navigate = useNavigate();
   const [processes, setProcesses] = useState<Process[]>([]);
@@ -29,7 +30,7 @@ export default function ProcessConfigurationList() {
         toast.error('Failed to load processes');
         return;
       }
-      setProcesses(data || []);
+      setProcesses(transformProcessArray(data || []));
     } catch (error) {
       console.error('Process load error:', error);
       toast.error('Failed to load processes');

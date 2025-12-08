@@ -5,6 +5,7 @@ import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGrou
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { Process } from "@/types/qpd";
+import { transformProcessArray } from "@/utils/processHelpers";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 export function AppSidebar() {
@@ -74,7 +75,7 @@ export function AppSidebar() {
         toast.error("Failed to load processes");
         return;
       }
-      setProcesses(processesData || []);
+      setProcesses(transformProcessArray(processesData || []));
       if (processesData && processesData.length > 0) {
         const counts: Record<string, number> = {};
         for (const process of processesData) {

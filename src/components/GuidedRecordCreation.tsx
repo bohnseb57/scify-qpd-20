@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { DynamicForm } from "@/components/DynamicForm";
 import { DiscoveryAnswers } from "@/components/ProcessDiscovery";
 import { TaskManager } from "@/components/TaskManager";
+import { transformProcessData, isTasksEnabled } from "@/utils/processHelpers";
 
 interface GuidedRecordCreationProps {
   processId: string;
@@ -71,7 +72,10 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
     { id: '5', name: 'Lisa Rodriguez', role: 'Compliance Officer' }
   ];
 
-  const steps: StepInfo[] = [
+  // Build steps dynamically based on process configuration
+  const tasksEnabled = isTasksEnabled(process);
+  
+  const allSteps: StepInfo[] = [
     {
       id: "overview",
       title: "Process Overview",
@@ -90,12 +94,12 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
       description: "Complete the specific fields required for this process",
       icon: <CheckCircle className="h-5 w-5" />
     },
-    {
+    ...(tasksEnabled ? [{
       id: "tasks",
       title: "Task Management",
       description: "Define tasks and assign team members",
       icon: <User className="h-5 w-5" />
-    },
+    }] : []),
     {
       id: "review",
       title: "Review & Submit",
@@ -103,6 +107,8 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
       icon: <CheckCircle className="h-5 w-5" />
     }
   ];
+
+  const steps = allSteps;
 
   useEffect(() => {
     loadProcessDetails();
@@ -124,7 +130,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
         .single();
 
       if (processError) throw processError;
-      setProcess(processData);
+      setProcess(transformProcessData(processData));
       
       // Generate record identifier using prefix from process settings
       const prefix = processData.record_id_prefix || 'REC';
@@ -267,18 +273,20 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
   };
 
   const isStepComplete = (stepIndex: number): boolean => {
-    switch (stepIndex) {
-      case 0: return true; // Overview step is always complete
-      case 1: return recordTitle.trim().length > 0;
-      case 2: {
-        // Check if all required fields are filled
+    const step = steps[stepIndex];
+    if (!step) return false;
+    
+    switch (step.id) {
+      case 'overview': return true;
+      case 'basic_info': return recordTitle.trim().length > 0;
+      case 'detailed_form': {
         const requiredFields = fields.filter(f => f.is_required);
         return requiredFields.every(field => 
           formValues[field.id] && formValues[field.id].trim().length > 0
         );
       }
-      case 3: return true; // Tasks step - optional
-      case 4: return true; // Review step
+      case 'tasks': return true; // Tasks step - optional
+      case 'review': return true;
       default: return false;
     }
   };
@@ -445,7 +453,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {currentStep === 0 && (
+            {currentStepInfo.id === 'overview' && (
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">About {processName}</h3>
@@ -474,7 +482,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
               </div>
             )}
 
-            {currentStep === 1 && (
+            {currentStepInfo.id === 'basic_info' && (
               <div className="space-y-4">
                 {/* Record Identifier - Auto-generated */}
                 <div className="bg-muted/50 border rounded-lg p-4 mb-4">
@@ -518,7 +526,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
               </div>
             )}
 
-            {currentStep === 2 && (
+            {currentStepInfo.id === 'detailed_form' && (
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Complete Process Fields</h3>
@@ -548,7 +556,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
               </div>
             )}
 
-            {currentStep === 3 && (
+            {currentStepInfo.id === 'tasks' && (
               <div className="space-y-6">
                 <TaskManager 
                   tasks={tasks}
@@ -558,7 +566,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
               </div>
             )}
 
-            {currentStep === 4 && (
+            {currentStepInfo.id === 'review' && (
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Review Your Information</h3>

@@ -9,6 +9,7 @@ import { Process, ProcessRecord } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { transformProcessArray } from "@/utils/processHelpers";
 
 export default function Dashboard() {
   console.log("📊 Dashboard component rendering");
@@ -36,7 +37,7 @@ export default function Dashboard() {
         console.error('Error loading processes:', processesError);
         toast.error('Failed to load processes');
       } else {
-        setProcesses(processesData || []);
+        setProcesses(transformProcessArray(processesData || []));
       }
 
       // Load recent records

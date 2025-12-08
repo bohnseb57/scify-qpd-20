@@ -15,6 +15,7 @@ import { ProcessRecord, Process, ProcessField, RecordFieldValue, WorkflowStep } 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { generateMockTasks, generateMockAuditTrail, mockTeamMembers, MockTask, MockAuditEntry } from "@/utils/mockData";
+import { transformProcessData, isTasksEnabled } from "@/utils/processHelpers";
 
 export default function RecordDetails() {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +66,7 @@ export default function RecordDetails() {
       if (processError) {
         console.error('Error loading process:', processError);
       } else {
-        setProcess(processData);
+        setProcess(transformProcessData(processData));
       }
 
       // Load process fields
@@ -267,15 +268,17 @@ export default function RecordDetails() {
 
       <div className="max-w-6xl mx-auto p-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${isTasksEnabled(process) ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Tasks ({mockTasks.length})
-            </TabsTrigger>
+            {isTasksEnabled(process) && (
+              <TabsTrigger value="tasks" className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Tasks ({mockTasks.length})
+              </TabsTrigger>
+            )}
             <TabsTrigger value="audit" className="flex items-center gap-2">
               <History className="h-4 w-4" />
               Audit Trail
@@ -400,35 +403,37 @@ export default function RecordDetails() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="tasks" className="space-y-6">
-            <Card className="shadow-elegant">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />
-                  Task Management
-                </CardTitle>
-                <CardDescription>
-                  Tasks assigned for this {process?.name} record
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TaskManager 
-                  tasks={mockTasks.map(task => ({
-                    id: task.id,
-                    title: task.title,
-                    description: task.description,
-                    assignedUser: task.assignedUser,
-                    dueDate: task.dueDate,
-                    priority: task.priority,
-                    status: task.status
-                  }))}
-                  onTasksChange={() => {}} // Read-only for now
-                  teamMembers={mockTeamMembers}
-                  readOnly={true}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {isTasksEnabled(process) && (
+            <TabsContent value="tasks" className="space-y-6">
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    Task Management
+                  </CardTitle>
+                  <CardDescription>
+                    Tasks assigned for this {process?.name} record
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TaskManager 
+                    tasks={mockTasks.map(task => ({
+                      id: task.id,
+                      title: task.title,
+                      description: task.description,
+                      assignedUser: task.assignedUser,
+                      dueDate: task.dueDate,
+                      priority: task.priority,
+                      status: task.status
+                    }))}
+                    onTasksChange={() => {}}
+                    teamMembers={mockTeamMembers}
+                    readOnly={true}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
           <TabsContent value="audit" className="space-y-6">
             <Card className="shadow-elegant">

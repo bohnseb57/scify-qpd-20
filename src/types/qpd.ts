@@ -28,6 +28,10 @@ export interface WorkflowStep {
   created_at: string;
 }
 
+export interface SubEntityConfig {
+  tasks_enabled?: boolean;
+}
+
 export interface Process {
   id: string;
   name: string;
@@ -35,6 +39,7 @@ export interface Process {
   ai_suggestion?: string;
   tag?: string;
   record_id_prefix?: string;
+  sub_entity_config?: SubEntityConfig | null;
   created_by: string;
   created_at: string;
   updated_at: string;
