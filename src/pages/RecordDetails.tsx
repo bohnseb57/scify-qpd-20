@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { WorkflowActions } from "@/components/WorkflowActions";
 import { WorkflowHistory } from "@/components/WorkflowHistory";
 import { TaskManager } from "@/components/TaskManager";
+import { LinkedRecordsSection } from "@/components/LinkedRecordsSection";
 import { ProcessRecord, Process, ProcessField, RecordFieldValue, WorkflowStep } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -333,6 +334,9 @@ export default function RecordDetails() {
               workflowSteps={workflowSteps} 
               onRecordUpdate={loadRecordDetails} 
             />
+
+            {/* Linked Records */}
+            <LinkedRecordsSection recordId={record.id} />
 
             {/* Field Values */}
             <Card className="shadow-elegant">

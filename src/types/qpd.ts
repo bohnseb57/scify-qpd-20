@@ -122,3 +122,18 @@ export interface ProcessGenerationResponse {
   suggested_workflow: GeneratedWorkflow[];
   ai_explanation: string;
 }
+
+// Inter-process linking
+export interface RecordLink {
+  id: string;
+  source_record_id: string;
+  target_record_id?: string | null;
+  target_process_id: string;
+  link_type: string;
+  created_at: string;
+  created_by: string;
+  // Joined data for display
+  source_record?: ProcessRecord;
+  target_record?: ProcessRecord;
+  target_process?: Process;
+}
