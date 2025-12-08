@@ -312,6 +312,17 @@ export function GuidedRecordCreation({
 
     setIsCreating(true);
     try {
+      // Fetch workflow steps to assign the first step
+      const { data: workflowSteps } = await supabase
+        .from('workflow_steps')
+        .select('id')
+        .eq('process_id', processId)
+        .order('step_order', { ascending: true })
+        .limit(1);
+
+      const firstStepId = workflowSteps && workflowSteps.length > 0 ? workflowSteps[0].id : null;
+      const initialStatus = firstStepId ? 'in_progress' : 'draft';
+
       // Create the record
       const { data: record, error: recordError } = await supabase
         .from('process_records')
@@ -320,7 +331,8 @@ export function GuidedRecordCreation({
           record_title: recordTitle,
           record_identifier: recordIdentifier,
           created_by: "00000000-0000-0000-0000-000000000000", // Demo UUID
-          current_status: 'draft'
+          current_status: initialStatus,
+          current_step_id: firstStepId
         })
         .select()
         .single();
