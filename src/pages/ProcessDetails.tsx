@@ -217,11 +217,11 @@ export default function ProcessDetails() {
                 </TableHeader>
                 <TableBody>
                    {records.map(record => <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50">
-                      <TableCell className="font-medium">{record.record_title}</TableCell>
+                      <TableCell className="font-medium font-mono text-sm">{record.record_identifier || '-'}</TableCell>
                       <TableCell>
                         <StatusBadge status={record.current_status} />
                       </TableCell>
-                      <TableCell>{recordTitles[record.id] || '-'}</TableCell>
+                      <TableCell>{record.record_title}</TableCell>
                       <TableCell>{new Date(record.created_at).toLocaleDateString()}</TableCell>
                       <TableCell>Demo User</TableCell>
                       <TableCell>
