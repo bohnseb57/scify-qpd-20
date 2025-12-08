@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, FileText, Lightbulb, User, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, AlertCircle, FileText, Lightbulb, User, Plus, Trash2, Link2 } from "lucide-react";
 import { ProcessField, Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { DynamicForm } from "@/components/DynamicForm";
 import { DiscoveryAnswers } from "@/components/ProcessDiscovery";
 import { TaskManager } from "@/components/TaskManager";
+import { LinkedProcessSelector } from "@/components/LinkedProcessSelector";
 import { transformProcessData, isTasksEnabled } from "@/utils/processHelpers";
 
 interface GuidedRecordCreationProps {
@@ -22,6 +23,9 @@ interface GuidedRecordCreationProps {
   discoveryAnswers?: DiscoveryAnswers;
   onComplete: () => void;
   onCancel: () => void;
+  // For completing pending links
+  linkId?: string;
+  sourceRecordId?: string;
 }
 
 interface Task {
@@ -51,7 +55,15 @@ const generateShortCode = (): string => {
   return code;
 };
 
-export function GuidedRecordCreation({ processId, processName, discoveryAnswers, onComplete, onCancel }: GuidedRecordCreationProps) {
+export function GuidedRecordCreation({ 
+  processId, 
+  processName, 
+  discoveryAnswers, 
+  onComplete, 
+  onCancel,
+  linkId,
+  sourceRecordId 
+}: GuidedRecordCreationProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [process, setProcess] = useState<Process | null>(null);
   const [fields, setFields] = useState<ProcessField[]>([]);
@@ -61,6 +73,7 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [linkedProcess, setLinkedProcess] = useState<Process | null>(null);
   const navigate = useNavigate();
 
   // Mock team members for task assignment
@@ -332,6 +345,43 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
         }
       }
 
+      // If this record was created from a pending link, update the link
+      if (linkId) {
+        const { error: linkUpdateError } = await supabase
+          .from('record_links')
+          .update({ target_record_id: record.id })
+          .eq('id', linkId);
+
+        if (linkUpdateError) {
+          console.error('Error updating record link:', linkUpdateError);
+        }
+      }
+
+      // If user selected a linked process, create a pending link and navigate
+      if (linkedProcess) {
+        const { data: newLink, error: linkError } = await supabase
+          .from('record_links')
+          .insert({
+            source_record_id: record.id,
+            target_process_id: linkedProcess.id,
+            link_type: 'triggered_by',
+            created_by: "00000000-0000-0000-0000-000000000000"
+          })
+          .select()
+          .single();
+
+        if (linkError) {
+          console.error('Error creating record link:', linkError);
+          toast.error('Record created but failed to create link');
+          navigate(`/record/${record.id}`);
+        } else {
+          toast.success(`Record created! Now creating linked ${linkedProcess.name}...`);
+          // Navigate to create the linked process
+          navigate(`/start-work?processId=${linkedProcess.id}&processName=${encodeURIComponent(linkedProcess.name)}&linkId=${newLink.id}&sourceRecordId=${record.id}`);
+        }
+        return;
+      }
+
       toast.success('Record created successfully!');
       onComplete();
       navigate(`/record/${record.id}`);
@@ -575,6 +625,19 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
                   </p>
                 </div>
 
+                {/* Show linked record indicator if this is being created from a link */}
+                {sourceRecordId && (
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+                    <Link2 className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-medium text-foreground">Linked Record</p>
+                      <p className="text-sm text-muted-foreground">
+                        This record will be linked to the parent record you just created.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <Card className="border-muted">
                     <CardHeader className="pb-3">
@@ -631,10 +694,22 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
                     </div>
                   )}
 
+                  {/* Linked Process Selector - only show if not already creating from a link */}
+                  {!linkId && (
+                    <LinkedProcessSelector
+                      currentProcessId={processId}
+                      selectedProcess={linkedProcess}
+                      onProcessSelect={setLinkedProcess}
+                    />
+                  )}
+
                   <div className="bg-success/10 border border-success/20 rounded-lg p-4">
                     <p className="text-sm text-success">
-                      ✓ Your {processName} record is ready to be created. Once submitted, it will enter the workflow 
-                      for review and processing.
+                      ✓ Your {processName} record is ready to be created.
+                      {linkedProcess 
+                        ? ` After saving, you'll continue to create a linked ${linkedProcess.name} record.`
+                        : ' Once submitted, it will enter the workflow for review and processing.'
+                      }
                     </p>
                   </div>
               </div>
@@ -679,6 +754,11 @@ export function GuidedRecordCreation({ processId, processName, discoveryAnswers,
                 <>
                   <div className="animate-spin h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full" />
                   Creating...
+                </>
+              ) : linkedProcess ? (
+                <>
+                  Create & Continue to {linkedProcess.name}
+                  <ArrowRight className="h-4 w-4" />
                 </>
               ) : (
                 <>

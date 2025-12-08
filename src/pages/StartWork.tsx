@@ -15,6 +15,8 @@ export default function StartWork() {
     id: string;
     name: string;
     discoveryAnswers?: any;
+    linkId?: string;
+    sourceRecordId?: string;
   } | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -23,10 +25,17 @@ export default function StartWork() {
   useEffect(() => {
     const processId = searchParams.get('processId');
     const processName = searchParams.get('processName');
+    const linkId = searchParams.get('linkId');
+    const sourceRecordId = searchParams.get('sourceRecordId');
     
     if (processId && processName) {
       // Skip discovery and go directly to record creation
-      setSelectedProcess({ id: processId, name: decodeURIComponent(processName) });
+      setSelectedProcess({ 
+        id: processId, 
+        name: decodeURIComponent(processName),
+        linkId: linkId || undefined,
+        sourceRecordId: sourceRecordId || undefined
+      });
       setCurrentStep("record-creation");
     }
   }, [searchParams]);
@@ -65,6 +74,8 @@ export default function StartWork() {
         discoveryAnswers={selectedProcess.discoveryAnswers}
         onComplete={handleComplete}
         onCancel={handleCancel}
+        linkId={selectedProcess.linkId}
+        sourceRecordId={selectedProcess.sourceRecordId}
       />
     );
   }

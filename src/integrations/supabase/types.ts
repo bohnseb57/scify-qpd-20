@@ -199,6 +199,58 @@ export type Database = {
           },
         ]
       }
+      record_links: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          link_type: string
+          source_record_id: string
+          target_process_id: string
+          target_record_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          link_type?: string
+          source_record_id: string
+          target_process_id: string
+          target_record_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          link_type?: string
+          source_record_id?: string
+          target_process_id?: string
+          target_record_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "record_links_source_record_id_fkey"
+            columns: ["source_record_id"]
+            isOneToOne: false
+            referencedRelation: "process_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "record_links_target_process_id_fkey"
+            columns: ["target_process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "record_links_target_record_id_fkey"
+            columns: ["target_record_id"]
+            isOneToOne: false
+            referencedRelation: "process_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           created_at: string
