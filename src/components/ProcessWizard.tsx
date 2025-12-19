@@ -6,9 +6,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneratedField, GeneratedWorkflow, ProcessGenerationRequest } from "@/types/qpd";
-import { Sparkles, Edit2, Trash2, Plus } from "lucide-react";
+import { Sparkles, Edit2, Trash2, Plus, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { FileUpload } from "@/components/FileUpload";
 
 interface ProcessWizardProps {
   onComplete: (processData: {
@@ -22,12 +24,14 @@ interface ProcessWizardProps {
 
 export function ProcessWizard({ onComplete, onCancel }: ProcessWizardProps) {
   const [step, setStep] = useState(1);
+  const [inputMode, setInputMode] = useState<"describe" | "upload">("describe");
   const [processName, setProcessName] = useState("");
   const [processDescription, setProcessDescription] = useState("");
   const [generatedFields, setGeneratedFields] = useState<GeneratedField[]>([]);
   const [generatedWorkflow, setGeneratedWorkflow] = useState<GeneratedWorkflow[]>([]);
   const [aiExplanation, setAiExplanation] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [sopReference, setSopReference] = useState<string | null>(null);
 
   const generateProcessStructure = async () => {
     if (!processName.trim() || !processDescription.trim()) {
@@ -81,6 +85,56 @@ export function ProcessWizard({ onComplete, onCancel }: ProcessWizardProps) {
     }
   };
 
+  const parseSOPDocument = async (file: File, base64: string) => {
+    setIsGenerating(true);
+    
+    try {
+      const response = await fetch(
+        'https://kdhjhmldzfyhylzzgbsc.supabase.co/functions/v1/parse-sop',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            document_base64: base64,
+            file_type: file.type,
+            file_name: file.name
+          })
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          toast.error("Rate limits exceeded. Please try again in a moment.");
+          return;
+        }
+        if (response.status === 402) {
+          toast.error("AI credits exhausted. Please add credits to continue.");
+          return;
+        }
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      setProcessName(result.suggested_name);
+      setProcessDescription(result.suggested_description);
+      setGeneratedFields(result.suggested_fields);
+      setGeneratedWorkflow(result.suggested_workflow);
+      setAiExplanation(result.ai_explanation);
+      setSopReference(result.sop_reference || null);
+      setStep(2);
+      
+      toast.success("SOP document analyzed successfully!");
+    } catch (error) {
+      console.error('Error parsing SOP document:', error);
+      toast.error("Failed to analyze SOP document. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const removeField = (index: number) => {
     setGeneratedFields(prev => prev.filter((_, i) => i !== index));
   };
@@ -120,54 +174,90 @@ export function ProcessWizard({ onComplete, onCancel }: ProcessWizardProps) {
             Create New Quality Process
           </CardTitle>
           <CardDescription>
-            Describe your process and let AI suggest the optimal structure
+            Describe your process or upload an existing SOP document
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="process-name">Process Name</Label>
-            <Input
-              id="process-name"
-              placeholder="e.g., CAPA Process, Audit Flow, Deviation Management"
-              value={processName}
-              onChange={(e) => setProcessName(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="process-description">Process Description</Label>
-            <Textarea
-              id="process-description"
-              placeholder="Describe what this process does, what steps are involved, and what outcomes you expect..."
-              rows={4}
-              value={processDescription}
-              onChange={(e) => setProcessDescription(e.target.value)}
-            />
-          </div>
+          <Tabs value={inputMode} onValueChange={(v) => setInputMode(v as "describe" | "upload")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="describe" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Describe Process
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Upload SOP
+              </TabsTrigger>
+            </TabsList>
 
-          <div className="flex gap-3 pt-4">
-            <Button 
-              variant="ai" 
-              onClick={generateProcessStructure}
-              disabled={isGenerating}
-              className="flex-1"
-            >
-              {isGenerating ? (
-                <>
-                  <Sparkles className="h-4 w-4 animate-spin" />
-                  Generating with AI...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  Generate Process Structure
-                </>
-              )}
-            </Button>
-            <Button variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-          </div>
+            <TabsContent value="describe" className="space-y-6 pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="process-name">Process Name</Label>
+                <Input
+                  id="process-name"
+                  placeholder="e.g., CAPA Process, Audit Flow, Deviation Management"
+                  value={processName}
+                  onChange={(e) => setProcessName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="process-description">Process Description</Label>
+                <Textarea
+                  id="process-description"
+                  placeholder="Describe what this process does, what steps are involved, and what outcomes you expect..."
+                  rows={4}
+                  value={processDescription}
+                  onChange={(e) => setProcessDescription(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  variant="ai" 
+                  onClick={generateProcessStructure}
+                  disabled={isGenerating}
+                  className="flex-1"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Sparkles className="h-4 w-4 animate-spin" />
+                      Generating with AI...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Generate Process Structure
+                    </>
+                  )}
+                </Button>
+                <Button variant="outline" onClick={onCancel}>
+                  Cancel
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="upload" className="space-y-6 pt-4">
+              <div className="space-y-2">
+                <Label>Upload SOP Document</Label>
+                <p className="text-sm text-muted-foreground">
+                  Upload an existing Standard Operating Procedure document. AI will analyze it and extract the process structure, form fields, and workflow steps.
+                </p>
+              </div>
+
+              <FileUpload 
+                onFileSelect={parseSOPDocument}
+                isLoading={isGenerating}
+                maxSizeMB={10}
+              />
+
+              <div className="flex gap-3 pt-4">
+                <Button variant="outline" onClick={onCancel} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     );
@@ -188,6 +278,11 @@ export function ProcessWizard({ onComplete, onCancel }: ProcessWizardProps) {
         <CardContent>
           <div className="bg-accent/50 p-4 rounded-lg mb-6">
             <p className="text-sm text-accent-foreground">{aiExplanation}</p>
+            {sopReference && (
+              <p className="text-xs text-muted-foreground mt-2">
+                SOP Reference: {sopReference}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
