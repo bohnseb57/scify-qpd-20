@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Settings, Edit, Trash2, Tag } from "lucide-react";
+import { Plus, Settings, Edit, Trash2, Tag, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,13 +10,17 @@ import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { transformProcessArray } from "@/utils/processHelpers";
+
 export default function ProcessConfigurationList() {
   const navigate = useNavigate();
   const [processes, setProcesses] = useState<Process[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [recordCounts, setRecordCounts] = useState<Record<string, number>>({});
+
   useEffect(() => {
     loadProcesses();
   }, []);
+
   const loadProcesses = async () => {
     try {
       const {
@@ -30,7 +34,19 @@ export default function ProcessConfigurationList() {
         toast.error('Failed to load processes');
         return;
       }
-      setProcesses(transformProcessArray(data || []));
+      const processData = transformProcessArray(data || []);
+      setProcesses(processData);
+      
+      // Fetch record counts for all processes
+      const counts: Record<string, number> = {};
+      for (const process of processData) {
+        const { count } = await supabase
+          .from('process_records')
+          .select('*', { count: 'exact', head: true })
+          .eq('process_id', process.id);
+        counts[process.id] = count || 0;
+      }
+      setRecordCounts(counts);
     } catch (error) {
       console.error('Process load error:', error);
       toast.error('Failed to load processes');
@@ -154,9 +170,20 @@ export default function ProcessConfigurationList() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Process</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete "{process.name}"? This action cannot be undone and will remove all associated fields, workflow steps, and records.
+                                <AlertDialogTitle className="flex items-center gap-2">
+                                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                                  Delete Process
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="space-y-2">
+                                  <span>Are you sure you want to delete "{process.name}"?</span>
+                                  {recordCounts[process.id] > 0 && (
+                                    <span className="block mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-destructive font-medium">
+                                      This will permanently delete {recordCounts[process.id]} record{recordCounts[process.id] !== 1 ? 's' : ''} and all associated data.
+                                    </span>
+                                  )}
+                                  <span className="block text-muted-foreground">
+                                    This action cannot be undone and will remove all associated fields, workflow steps, and records.
+                                  </span>
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
