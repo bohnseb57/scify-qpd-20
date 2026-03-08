@@ -53,13 +53,14 @@ export function AppSidebar() {
     loadProcesses();
 
     // Subscribe to realtime changes on processes table
-    const channel = supabase.channel('processes-changes').on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'processes'
-    }, () => {
-      loadProcesses();
-    }).subscribe();
+    const channel = supabase.channel('sidebar-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'processes' }, () => {
+        loadProcesses();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'process_records' }, () => {
+        loadProcesses();
+      })
+      .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
