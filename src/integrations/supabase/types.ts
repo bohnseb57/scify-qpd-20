@@ -14,6 +14,209 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          comment: string | null
+          entity_id: string
+          entity_reference: string | null
+          entity_type: string
+          id: string
+          source: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          comment?: string | null
+          entity_id: string
+          entity_reference?: string | null
+          entity_type: string
+          id?: string
+          source?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          comment?: string | null
+          entity_id?: string
+          entity_reference?: string | null
+          entity_type?: string
+          id?: string
+          source?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capa_tasks: {
+        Row: {
+          assigned_to: string | null
+          capa_id: string | null
+          comment: string | null
+          completion_date: string | null
+          description: string
+          due_date: string
+          id: string
+          status: string
+          task_name: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          capa_id?: string | null
+          comment?: string | null
+          completion_date?: string | null
+          description: string
+          due_date: string
+          id?: string
+          status: string
+          task_name: string
+        }
+        Update: {
+          assigned_to?: string | null
+          capa_id?: string | null
+          comment?: string | null
+          completion_date?: string | null
+          description?: string
+          due_date?: string
+          id?: string
+          status?: string
+          task_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capa_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capa_tasks_capa_id_fkey"
+            columns: ["capa_id"]
+            isOneToOne: false
+            referencedRelation: "capas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capas: {
+        Row: {
+          assigned_to: string | null
+          description: string
+          due_date: string
+          id: string
+          linked_deviation_id: string | null
+          linked_sop: string | null
+          opened_by: string | null
+          opened_date: string
+          priority: string
+          reference: string
+          status: string
+          title: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          description: string
+          due_date: string
+          id?: string
+          linked_deviation_id?: string | null
+          linked_sop?: string | null
+          opened_by?: string | null
+          opened_date: string
+          priority: string
+          reference: string
+          status: string
+          title: string
+        }
+        Update: {
+          assigned_to?: string | null
+          description?: string
+          due_date?: string
+          id?: string
+          linked_deviation_id?: string | null
+          linked_sop?: string | null
+          opened_by?: string | null
+          opened_date?: string
+          priority?: string
+          reference?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capas_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capas_linked_deviation_id_fkey"
+            columns: ["linked_deviation_id"]
+            isOneToOne: false
+            referencedRelation: "deviations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capas_opened_by_fkey"
+            columns: ["opened_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deviations: {
+        Row: {
+          department: string
+          description: string
+          detected_by: string | null
+          detected_date: string
+          id: string
+          reference: string
+          status: string
+          title: string
+        }
+        Insert: {
+          department: string
+          description: string
+          detected_by?: string | null
+          detected_date: string
+          id?: string
+          reference: string
+          status: string
+          title: string
+        }
+        Update: {
+          department?: string
+          description?: string
+          detected_by?: string | null
+          detected_date?: string
+          id?: string
+          reference?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deviations_detected_by_fkey"
+            columns: ["detected_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       process_fields: {
         Row: {
           created_at: string
@@ -251,6 +454,53 @@ export type Database = {
           },
         ]
       }
+      trainings: {
+        Row: {
+          assigned_date: string
+          completion_date: string | null
+          description: string
+          due_date: string
+          id: string
+          linked_sop: string | null
+          overdue: boolean | null
+          status: string
+          training_name: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_date: string
+          completion_date?: string | null
+          description: string
+          due_date: string
+          id?: string
+          linked_sop?: string | null
+          overdue?: boolean | null
+          status: string
+          training_name: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_date?: string
+          completion_date?: string | null
+          description?: string
+          due_date?: string
+          id?: string
+          linked_sop?: string | null
+          overdue?: boolean | null
+          status?: string
+          training_name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trainings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           created_at: string
@@ -281,6 +531,33 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          department: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          role: string
+        }
+        Insert: {
+          department: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          role: string
+        }
+        Update: {
+          department?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          role?: string
         }
         Relationships: []
       }
