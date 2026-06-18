@@ -309,8 +309,30 @@ export default function RecordDetails() {
       </div>
 
       <div className="max-w-6xl mx-auto p-6">
+        {/* Parent record back-link */}
+        {parentInfo && (
+          <div
+            className="mb-4 p-3 rounded-lg border bg-muted/30 flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/60 transition-smooth"
+            onClick={() => navigate(`/record/${parentInfo.record.id}`)}
+          >
+            <div className="flex items-center gap-2 text-sm">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                Parent
+              </Badge>
+              <span className="text-muted-foreground">{parentInfo.process.name}:</span>
+              <span className="font-medium">{parentInfo.record.record_title}</span>
+              {parentInfo.record.record_identifier && (
+                <span className="font-mono text-xs text-muted-foreground">
+                  ({parentInfo.record.record_identifier})
+                </span>
+              )}
+            </div>
+            <Button variant="ghost" size="sm">Open parent →</Button>
+          </div>
+        )}
+
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className={`grid w-full ${isTasksEnabled(process) ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          <TabsList className="flex w-full flex-wrap justify-start">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Overview
@@ -321,11 +343,24 @@ export default function RecordDetails() {
                 Tasks ({mockTasks.length})
               </TabsTrigger>
             )}
+            {childProcesses.map((cp) => (
+              <TabsTrigger key={cp.id} value={`child-${cp.id}`} className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                {cp.name}
+              </TabsTrigger>
+            ))}
             <TabsTrigger value="audit" className="flex items-center gap-2">
               <History className="h-4 w-4" />
               Audit Trail
             </TabsTrigger>
           </TabsList>
+
+          {childProcesses.map((cp) => (
+            <TabsContent key={cp.id} value={`child-${cp.id}`} className="space-y-6">
+              <ChildProcessRecords parentRecordId={record.id} childProcess={cp} />
+            </TabsContent>
+          ))}
+
 
           <TabsContent value="overview" className="space-y-8">
             {/* Record Overview Stats */}
