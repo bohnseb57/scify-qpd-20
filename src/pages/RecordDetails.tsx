@@ -70,7 +70,45 @@ export default function RecordDetails() {
       if (processError) {
         console.error('Error loading process:', processError);
       } else {
-        setProcess(transformProcessData(processData));
+        const transformed = transformProcessData(processData);
+        setProcess(transformed);
+
+        // Load child processes (processes whose parent_process_id == this process)
+        const { data: childProcsData } = await supabase
+          .from('processes')
+          .select('*')
+          .eq('parent_process_id', transformed.id)
+          .eq('is_active', true)
+          .order('name');
+        setChildProcesses(transformProcessArray(childProcsData || []));
+
+        // If this process has a parent, find this record's parent-record link
+        if (transformed.parent_process_id) {
+          const { data: parentLink } = await supabase
+            .from('record_links')
+            .select('target_record_id')
+            .eq('source_record_id', recordData.id)
+            .eq('link_type', 'child_of')
+            .maybeSingle();
+          if (parentLink?.target_record_id) {
+            const { data: parentRecord } = await supabase
+              .from('process_records')
+              .select('*')
+              .eq('id', parentLink.target_record_id)
+              .maybeSingle();
+            const { data: parentProc } = await supabase
+              .from('processes')
+              .select('*')
+              .eq('id', transformed.parent_process_id)
+              .maybeSingle();
+            if (parentRecord && parentProc) {
+              setParentInfo({
+                record: parentRecord as ProcessRecord,
+                process: transformProcessData(parentProc),
+              });
+            }
+          }
+        }
       }
 
       // Load process fields
