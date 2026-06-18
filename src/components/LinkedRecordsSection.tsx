@@ -32,10 +32,12 @@ export function LinkedRecordsSection({ recordId }: LinkedRecordsSectionProps) {
   const loadLinkedRecords = async () => {
     try {
       // Load records this record triggered (source_record_id = this record)
+      // Exclude 'child_of' — those are surfaced in dedicated child tabs / parent header.
       const { data: triggeredData, error: triggeredError } = await supabase
         .from('record_links')
         .select('*')
-        .eq('source_record_id', recordId);
+        .eq('source_record_id', recordId)
+        .neq('link_type', 'child_of');
 
       if (triggeredError) throw triggeredError;
 
@@ -43,7 +45,8 @@ export function LinkedRecordsSection({ recordId }: LinkedRecordsSectionProps) {
       const { data: triggeredByData, error: triggeredByError } = await supabase
         .from('record_links')
         .select('*')
-        .eq('target_record_id', recordId);
+        .eq('target_record_id', recordId)
+        .neq('link_type', 'child_of');
 
       if (triggeredByError) throw triggeredByError;
 
