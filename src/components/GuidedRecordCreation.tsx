@@ -64,7 +64,8 @@ export function GuidedRecordCreation({
   onComplete, 
   onCancel,
   linkId,
-  sourceRecordId 
+  sourceRecordId,
+  parentRecordId,
 }: GuidedRecordCreationProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [process, setProcess] = useState<Process | null>(null);
