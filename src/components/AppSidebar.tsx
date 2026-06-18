@@ -31,12 +31,29 @@ export function AppSidebar() {
   const hoverHideTimer = useRef<number | null>(null);
   const [openTags, setOpenTags] = useState<Record<string, boolean>>({});
 
-  // Group processes by tag
+  // Build children map: parentId -> child Process[]
+  const childrenMap = useMemo(() => {
+    const map: Record<string, Process[]> = {};
+    processes.forEach((p) => {
+      if (p.parent_process_id) {
+        (map[p.parent_process_id] ||= []).push(p);
+      }
+    });
+    return map;
+  }, [processes]);
+
+  // Top-level processes only (children rendered nested under their parent)
+  const topLevelProcesses = useMemo(
+    () => processes.filter((p) => !p.parent_process_id || !processes.find((pp) => pp.id === p.parent_process_id)),
+    [processes]
+  );
+
+  // Group top-level processes by tag
   const groupedProcesses = useMemo(() => {
     const groups: Record<string, Process[]> = {};
     const untagged: Process[] = [];
 
-    processes.forEach((process) => {
+    topLevelProcesses.forEach((process) => {
       if (process.tag) {
         if (!groups[process.tag]) {
           groups[process.tag] = [];
@@ -48,7 +65,7 @@ export function AppSidebar() {
     });
 
     return { groups, untagged };
-  }, [processes]);
+  }, [topLevelProcesses]);
   useEffect(() => {
     loadProcesses();
 
