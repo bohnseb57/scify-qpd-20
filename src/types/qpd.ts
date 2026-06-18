@@ -40,6 +40,7 @@ export interface Process {
   tag?: string;
   record_id_prefix?: string;
   sub_entity_config?: SubEntityConfig | null;
+  parent_process_id?: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;

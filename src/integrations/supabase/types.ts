@@ -327,6 +327,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          parent_process_id: string | null
           record_id_prefix: string | null
           sub_entity_config: Json | null
           tag: string | null
@@ -340,6 +341,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          parent_process_id?: string | null
           record_id_prefix?: string | null
           sub_entity_config?: Json | null
           tag?: string | null
@@ -353,12 +355,21 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          parent_process_id?: string | null
           record_id_prefix?: string | null
           sub_entity_config?: Json | null
           tag?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "processes_parent_process_id_fkey"
+            columns: ["parent_process_id"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       record_field_values: {
         Row: {

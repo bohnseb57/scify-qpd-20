@@ -26,6 +26,8 @@ interface GuidedRecordCreationProps {
   // For completing pending links
   linkId?: string;
   sourceRecordId?: string;
+  // For child-of relationships: parent record this new record should be linked to
+  parentRecordId?: string;
 }
 
 interface Task {
@@ -62,7 +64,8 @@ export function GuidedRecordCreation({
   onComplete, 
   onCancel,
   linkId,
-  sourceRecordId 
+  sourceRecordId,
+  parentRecordId,
 }: GuidedRecordCreationProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [process, setProcess] = useState<Process | null>(null);
@@ -368,6 +371,24 @@ export function GuidedRecordCreation({
           console.error('Error updating record link:', linkUpdateError);
         }
       }
+
+      // If this record has a parent record (subprocess relationship), create a child_of link
+      if (parentRecordId && process?.parent_process_id) {
+        const { error: childLinkError } = await supabase
+          .from('record_links')
+          .insert({
+            source_record_id: record.id,
+            target_record_id: parentRecordId,
+            target_process_id: process.parent_process_id,
+            link_type: 'child_of',
+            created_by: "00000000-0000-0000-0000-000000000000",
+          });
+        if (childLinkError) {
+          console.error('Error creating child_of link:', childLinkError);
+          toast.error('Record created but failed to link to parent');
+        }
+      }
+
 
       // If user selected a linked process, create a pending link and navigate
       if (linkedProcess) {

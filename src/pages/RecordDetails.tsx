@@ -12,11 +12,12 @@ import { WorkflowActions } from "@/components/WorkflowActions";
 import { WorkflowHistory } from "@/components/WorkflowHistory";
 import { TaskManager } from "@/components/TaskManager";
 import { LinkedRecordsSection } from "@/components/LinkedRecordsSection";
+import { ChildProcessRecords } from "@/components/ChildProcessRecords";
 import { ProcessRecord, Process, ProcessField, RecordFieldValue, WorkflowStep } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { generateMockTasks, generateMockAuditTrail, mockTeamMembers, MockTask, MockAuditEntry } from "@/utils/mockData";
-import { transformProcessData, isTasksEnabled } from "@/utils/processHelpers";
+import { transformProcessData, transformProcessArray, isTasksEnabled } from "@/utils/processHelpers";
 
 export default function RecordDetails() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,8 @@ export default function RecordDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [childProcesses, setChildProcesses] = useState<Process[]>([]);
+  const [parentInfo, setParentInfo] = useState<{ record: ProcessRecord; process: Process } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -67,7 +70,45 @@ export default function RecordDetails() {
       if (processError) {
         console.error('Error loading process:', processError);
       } else {
-        setProcess(transformProcessData(processData));
+        const transformed = transformProcessData(processData);
+        setProcess(transformed);
+
+        // Load child processes (processes whose parent_process_id == this process)
+        const { data: childProcsData } = await supabase
+          .from('processes')
+          .select('*')
+          .eq('parent_process_id', transformed.id)
+          .eq('is_active', true)
+          .order('name');
+        setChildProcesses(transformProcessArray(childProcsData || []));
+
+        // If this process has a parent, find this record's parent-record link
+        if (transformed.parent_process_id) {
+          const { data: parentLink } = await supabase
+            .from('record_links')
+            .select('target_record_id')
+            .eq('source_record_id', recordData.id)
+            .eq('link_type', 'child_of')
+            .maybeSingle();
+          if (parentLink?.target_record_id) {
+            const { data: parentRecord } = await supabase
+              .from('process_records')
+              .select('*')
+              .eq('id', parentLink.target_record_id)
+              .maybeSingle();
+            const { data: parentProc } = await supabase
+              .from('processes')
+              .select('*')
+              .eq('id', transformed.parent_process_id)
+              .maybeSingle();
+            if (parentRecord && parentProc) {
+              setParentInfo({
+                record: parentRecord as ProcessRecord,
+                process: transformProcessData(parentProc),
+              });
+            }
+          }
+        }
       }
 
       // Load process fields
@@ -268,8 +309,30 @@ export default function RecordDetails() {
       </div>
 
       <div className="max-w-6xl mx-auto p-6">
+        {/* Parent record back-link */}
+        {parentInfo && (
+          <div
+            className="mb-4 p-3 rounded-lg border bg-muted/30 flex items-center justify-between gap-3 cursor-pointer hover:bg-muted/60 transition-smooth"
+            onClick={() => navigate(`/record/${parentInfo.record.id}`)}
+          >
+            <div className="flex items-center gap-2 text-sm">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                Parent
+              </Badge>
+              <span className="text-muted-foreground">{parentInfo.process.name}:</span>
+              <span className="font-medium">{parentInfo.record.record_title}</span>
+              {parentInfo.record.record_identifier && (
+                <span className="font-mono text-xs text-muted-foreground">
+                  ({parentInfo.record.record_identifier})
+                </span>
+              )}
+            </div>
+            <Button variant="ghost" size="sm">Open parent →</Button>
+          </div>
+        )}
+
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className={`grid w-full ${isTasksEnabled(process) ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          <TabsList className="flex w-full flex-wrap justify-start">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Overview
@@ -280,11 +343,24 @@ export default function RecordDetails() {
                 Tasks ({mockTasks.length})
               </TabsTrigger>
             )}
+            {childProcesses.map((cp) => (
+              <TabsTrigger key={cp.id} value={`child-${cp.id}`} className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                {cp.name}
+              </TabsTrigger>
+            ))}
             <TabsTrigger value="audit" className="flex items-center gap-2">
               <History className="h-4 w-4" />
               Audit Trail
             </TabsTrigger>
           </TabsList>
+
+          {childProcesses.map((cp) => (
+            <TabsContent key={cp.id} value={`child-${cp.id}`} className="space-y-6">
+              <ChildProcessRecords parentRecordId={record.id} childProcess={cp} />
+            </TabsContent>
+          ))}
+
 
           <TabsContent value="overview" className="space-y-8">
             {/* Record Overview Stats */}

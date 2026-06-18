@@ -17,6 +17,7 @@ export default function StartWork() {
     discoveryAnswers?: any;
     linkId?: string;
     sourceRecordId?: string;
+    parentRecordId?: string;
   } | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -27,6 +28,7 @@ export default function StartWork() {
     const processName = searchParams.get('processName');
     const linkId = searchParams.get('linkId');
     const sourceRecordId = searchParams.get('sourceRecordId');
+    const parentRecordId = searchParams.get('parentRecordId');
     
     if (processId && processName) {
       // Skip discovery and go directly to record creation
@@ -34,7 +36,8 @@ export default function StartWork() {
         id: processId, 
         name: decodeURIComponent(processName),
         linkId: linkId || undefined,
-        sourceRecordId: sourceRecordId || undefined
+        sourceRecordId: sourceRecordId || undefined,
+        parentRecordId: parentRecordId || undefined,
       });
       setCurrentStep("record-creation");
     }
@@ -76,6 +79,7 @@ export default function StartWork() {
         onCancel={handleCancel}
         linkId={selectedProcess.linkId}
         sourceRecordId={selectedProcess.sourceRecordId}
+        parentRecordId={selectedProcess.parentRecordId}
       />
     );
   }

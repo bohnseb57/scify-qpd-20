@@ -9,11 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Process } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { transformProcessData } from "@/utils/processHelpers";
+import { transformProcessData, transformProcessArray } from "@/utils/processHelpers";
 
 const PREDEFINED_TAGS = [
   "Quality Events",
@@ -30,6 +31,7 @@ export default function ProcessConfiguration() {
   const [process, setProcess] = useState<Process | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [otherProcesses, setOtherProcesses] = useState<Process[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -37,7 +39,8 @@ export default function ProcessConfiguration() {
     ai_suggestion: "",
     tag: "",
     record_id_prefix: "",
-    tasks_enabled: true
+    tasks_enabled: true,
+    parent_process_id: "" as string,
   });
   const [tagOpen, setTagOpen] = useState(false);
   const [customTags, setCustomTags] = useState<string[]>([]);
@@ -45,8 +48,19 @@ export default function ProcessConfiguration() {
   useEffect(() => {
     if (id) {
       loadProcess();
+      loadOtherProcesses();
     }
   }, [id]);
+
+  const loadOtherProcesses = async () => {
+    if (!id) return;
+    const { data, error } = await supabase
+      .from('processes')
+      .select('*')
+      .neq('id', id)
+      .order('name');
+    if (!error && data) setOtherProcesses(transformProcessArray(data));
+  };
 
   const loadProcess = async () => {
     if (!id) return;
@@ -74,7 +88,8 @@ export default function ProcessConfiguration() {
         ai_suggestion: data.ai_suggestion || "",
         tag: data.tag || "",
         record_id_prefix: data.record_id_prefix || "",
-        tasks_enabled: subEntityConfig?.tasks_enabled ?? true
+        tasks_enabled: subEntityConfig?.tasks_enabled ?? true,
+        parent_process_id: data.parent_process_id || "",
       });
       // If data has a custom tag not in predefined list, add it
       if (data.tag && !PREDEFINED_TAGS.includes(data.tag)) {
@@ -106,7 +121,8 @@ export default function ProcessConfiguration() {
           ai_suggestion: formData.ai_suggestion.trim() || null,
           tag: formData.tag.trim() || null,
           record_id_prefix: formData.record_id_prefix.trim().toUpperCase() || null,
-          sub_entity_config: { tasks_enabled: formData.tasks_enabled }
+          sub_entity_config: { tasks_enabled: formData.tasks_enabled },
+          parent_process_id: formData.parent_process_id || null,
         })
         .eq('id', id);
 
@@ -340,6 +356,36 @@ export default function ProcessConfiguration() {
                   Tags help organize processes in the navigation sidebar
                 </p>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="parent_process_id">Parent Process</Label>
+                <Select
+                  value={formData.parent_process_id || "__none__"}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      parent_process_id: value === "__none__" ? "" : value,
+                    }))
+                  }
+                >
+                  <SelectTrigger id="parent_process_id">
+                    <SelectValue placeholder="None — this is a top-level process" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None — top-level process</SelectItem>
+                    {otherProcesses.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  If set, records of this process appear as children (e.g. "Findings") on records of the selected parent process.
+                </p>
+              </div>
+
+
 
               <div className="flex items-center space-x-2">
                 <Switch
