@@ -26,6 +26,8 @@ interface GuidedRecordCreationProps {
   // For completing pending links
   linkId?: string;
   sourceRecordId?: string;
+  // For child-of relationships: parent record this new record should be linked to
+  parentRecordId?: string;
 }
 
 interface Task {
