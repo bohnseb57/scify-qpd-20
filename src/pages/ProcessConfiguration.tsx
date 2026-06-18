@@ -383,6 +383,9 @@ export default function ProcessConfiguration() {
                 <p className="text-xs text-muted-foreground">
                   If set, records of this process appear as children (e.g. "Findings") on records of the selected parent process.
                 </p>
+              </div>
+
+
 
               <div className="flex items-center space-x-2">
                 <Switch
