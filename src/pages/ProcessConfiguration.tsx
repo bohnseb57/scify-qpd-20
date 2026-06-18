@@ -357,6 +357,33 @@ export default function ProcessConfiguration() {
                 </p>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="parent_process_id">Parent Process</Label>
+                <Select
+                  value={formData.parent_process_id || "__none__"}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      parent_process_id: value === "__none__" ? "" : value,
+                    }))
+                  }
+                >
+                  <SelectTrigger id="parent_process_id">
+                    <SelectValue placeholder="None — this is a top-level process" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None — top-level process</SelectItem>
+                    {otherProcesses.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  If set, records of this process appear as children (e.g. "Findings") on records of the selected parent process.
+                </p>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="is_active"
