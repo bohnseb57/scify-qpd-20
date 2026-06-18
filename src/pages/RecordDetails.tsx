@@ -12,11 +12,12 @@ import { WorkflowActions } from "@/components/WorkflowActions";
 import { WorkflowHistory } from "@/components/WorkflowHistory";
 import { TaskManager } from "@/components/TaskManager";
 import { LinkedRecordsSection } from "@/components/LinkedRecordsSection";
+import { ChildProcessRecords } from "@/components/ChildProcessRecords";
 import { ProcessRecord, Process, ProcessField, RecordFieldValue, WorkflowStep } from "@/types/qpd";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { generateMockTasks, generateMockAuditTrail, mockTeamMembers, MockTask, MockAuditEntry } from "@/utils/mockData";
-import { transformProcessData, isTasksEnabled } from "@/utils/processHelpers";
+import { transformProcessData, transformProcessArray, isTasksEnabled } from "@/utils/processHelpers";
 
 export default function RecordDetails() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,8 @@ export default function RecordDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [childProcesses, setChildProcesses] = useState<Process[]>([]);
+  const [parentInfo, setParentInfo] = useState<{ record: ProcessRecord; process: Process } | null>(null);
 
   useEffect(() => {
     if (id) {
