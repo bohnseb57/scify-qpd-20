@@ -207,7 +207,8 @@ export default function ProcessConfigurationList() {
                           </AlertDialog>
                         </div>
                       </TableCell>
-                    </TableRow>)}
+                    </TableRow>);
+                  })}
                 </TableBody>
               </Table>}
           </CardContent>
