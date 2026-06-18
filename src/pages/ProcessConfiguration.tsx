@@ -30,6 +30,7 @@ export default function ProcessConfiguration() {
   const [process, setProcess] = useState<Process | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [otherProcesses, setOtherProcesses] = useState<Process[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -37,7 +38,8 @@ export default function ProcessConfiguration() {
     ai_suggestion: "",
     tag: "",
     record_id_prefix: "",
-    tasks_enabled: true
+    tasks_enabled: true,
+    parent_process_id: "" as string,
   });
   const [tagOpen, setTagOpen] = useState(false);
   const [customTags, setCustomTags] = useState<string[]>([]);
@@ -45,8 +47,19 @@ export default function ProcessConfiguration() {
   useEffect(() => {
     if (id) {
       loadProcess();
+      loadOtherProcesses();
     }
   }, [id]);
+
+  const loadOtherProcesses = async () => {
+    if (!id) return;
+    const { data, error } = await supabase
+      .from('processes')
+      .select('*')
+      .neq('id', id)
+      .order('name');
+    if (!error && data) setOtherProcesses(transformProcessArray(data));
+  };
 
   const loadProcess = async () => {
     if (!id) return;
@@ -74,7 +87,8 @@ export default function ProcessConfiguration() {
         ai_suggestion: data.ai_suggestion || "",
         tag: data.tag || "",
         record_id_prefix: data.record_id_prefix || "",
-        tasks_enabled: subEntityConfig?.tasks_enabled ?? true
+        tasks_enabled: subEntityConfig?.tasks_enabled ?? true,
+        parent_process_id: data.parent_process_id || "",
       });
       // If data has a custom tag not in predefined list, add it
       if (data.tag && !PREDEFINED_TAGS.includes(data.tag)) {
@@ -106,7 +120,8 @@ export default function ProcessConfiguration() {
           ai_suggestion: formData.ai_suggestion.trim() || null,
           tag: formData.tag.trim() || null,
           record_id_prefix: formData.record_id_prefix.trim().toUpperCase() || null,
-          sub_entity_config: { tasks_enabled: formData.tasks_enabled }
+          sub_entity_config: { tasks_enabled: formData.tasks_enabled },
+          parent_process_id: formData.parent_process_id || null,
         })
         .eq('id', id);
 
