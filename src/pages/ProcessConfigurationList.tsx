@@ -128,8 +128,19 @@ export default function ProcessConfigurationList() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {processes.map(process => <TableRow key={process.id}>
-                      <TableCell className="font-medium">{process.name}</TableCell>
+                  {processes.map(process => {
+                    const parent = process.parent_process_id
+                      ? processes.find(p => p.id === process.parent_process_id)
+                      : null;
+                    return (<TableRow key={process.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex flex-col gap-1">
+                          <span>{process.name}</span>
+                          {parent && (
+                            <span className="text-xs text-muted-foreground">↳ child of {parent.name}</span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {process.tag ? (
                           <Badge variant="secondary" className="gap-1">
