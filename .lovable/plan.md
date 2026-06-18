@@ -1,108 +1,74 @@
+## Goal
 
-## Plan: Enable Process Deletion with Cascade Cleanup
+Add structural **parent → child process** relationships so a process like "Audit" can declare "Findings" as a subprocess, with a Findings tab on each Audit record, inline create that auto-links back to the parent, and a status rollup (counts by status) on the parent.
 
-### Problem Analysis
-Currently, deleting a process fails when records exist due to foreign key constraints with `ON DELETE NO ACTION`. The dependency chain is:
+Constraints from your answers:
+- A child process has **exactly one** parent process (1:1 declaration).
+- Children appear as a **tab with a list + inline create** on the parent record.
+- Lifecycle is **loose with status rollup only** — no gating, no cascade closure.
 
-```text
-processes
-    ├── process_fields (CASCADE - OK)
-    ├── workflow_steps (CASCADE - but blocked by workflow_history)
-    │       ├── process_records.current_step_id (NO ACTION - blocks)
-    │       ├── workflow_history.from_step_id (NO ACTION - blocks)
-    │       └── workflow_history.to_step_id (NO ACTION - blocks)
-    ├── process_records (NO ACTION - blocks delete)
-    │       ├── record_field_values (CASCADE - OK)
-    │       ├── workflow_history.record_id (CASCADE - OK)
-    │       └── record_links (CASCADE - OK)
-    └── record_links.target_process_id (CASCADE - OK)
-```
+## Data model changes
 
-### Solution: Database Migration
-Modify the foreign key constraints to use `ON DELETE CASCADE` or `ON DELETE SET NULL` where appropriate, allowing a clean cascade when a process is deleted.
+Add one nullable column on `processes`:
 
----
+- `parent_process_id uuid REFERENCES public.processes(id) ON DELETE SET NULL`
+- Index on `parent_process_id`.
 
-### Technical Details
+That's enough for "one parent only". No new table needed for the declaration.
 
-#### Database Migration Changes
+For the actual parent-record ↔ child-record link, **reuse the existing `record_links` table** with a new `link_type` value: `'child_of'` (target = parent record, source = child record). This keeps one linking mechanism instead of two.
 
-**1. Update `process_records.process_id` constraint:**
-```sql
-ALTER TABLE process_records 
-  DROP CONSTRAINT process_records_process_id_fkey;
-ALTER TABLE process_records 
-  ADD CONSTRAINT process_records_process_id_fkey 
-  FOREIGN KEY (process_id) REFERENCES processes(id) ON DELETE CASCADE;
-```
+On parent process deletion: `parent_process_id` becomes NULL on the children (they remain standalone processes). Existing `record_links` rows are unaffected unless the records themselves are deleted (already handled by current cascade).
 
-**2. Update `process_records.current_step_id` constraint:**
-```sql
-ALTER TABLE process_records 
-  DROP CONSTRAINT process_records_current_step_id_fkey;
-ALTER TABLE process_records 
-  ADD CONSTRAINT process_records_current_step_id_fkey 
-  FOREIGN KEY (current_step_id) REFERENCES workflow_steps(id) ON DELETE SET NULL;
-```
+## Backend behavior
 
-**3. Update `workflow_history.from_step_id` constraint:**
-```sql
-ALTER TABLE workflow_history 
-  DROP CONSTRAINT workflow_history_from_step_id_fkey;
-ALTER TABLE workflow_history 
-  ADD CONSTRAINT workflow_history_from_step_id_fkey 
-  FOREIGN KEY (from_step_id) REFERENCES workflow_steps(id) ON DELETE SET NULL;
-```
+- When creating a record for a process that has `parent_process_id` set, **require** a `parent_record_id` (passed via URL param or selector) and write a `record_links` row (`source=child record`, `target=parent record`, `link_type='child_of'`, `target_process_id=parent process`).
+- Reads for the parent tab: query `record_links` where `target_record_id = <parent record>` and `link_type='child_of'`, join `process_records` for status/title.
 
-**4. Update `workflow_history.to_step_id` constraint:**
-```sql
-ALTER TABLE workflow_history 
-  DROP CONSTRAINT workflow_history_to_step_id_fkey;
-ALTER TABLE workflow_history 
-  ADD CONSTRAINT workflow_history_to_step_id_fkey 
-  FOREIGN KEY (to_step_id) REFERENCES workflow_steps(id) ON DELETE SET NULL;
-```
+## UI changes
 
----
+**1. Process configuration (`ProcessConfiguration` page)**
+   - New "Parent process" dropdown in process settings. Lists all other processes. Optional. Saving sets `parent_process_id`.
+   - Helper text: "Records of this process will appear as children of the selected parent's records."
 
-### Cascade Behavior After Changes
+**2. Manage Processes list**
+   - Show a small "↳ child of {Parent}" badge under processes that have a parent, so the hierarchy is visible.
 
-When a process is deleted:
-1. **process_fields** - Deleted (CASCADE)
-2. **workflow_steps** - Deleted (CASCADE)
-3. **process_records** - Deleted (CASCADE)
-   - **record_field_values** - Deleted (CASCADE from records)
-   - **workflow_history** - Deleted (CASCADE from records, step references SET NULL first)
-   - **record_links** (source) - Deleted (CASCADE from records)
-4. **record_links** (target_process_id) - Deleted (CASCADE)
+**3. Sidebar (`AppSidebar`)**
+   - Group children under their parent visually (indent + chevron). Parent processes that have children become collapsible. Top-level list stays flat for parentless processes.
 
----
+**4. Record creation flow**
+   - If the process has a `parent_process_id`:
+     - If launched from a parent record's "+ Add Finding" button, parent record id is in the URL — pre-fill and lock.
+     - If launched standalone (e.g., from sidebar), show a required "Parent {ParentProcessName} record" selector in step 1 before normal fields.
 
-### UI Enhancement (Optional)
+**5. Record Details page (parent side)**
+   - For each child process declared with this process as parent, render a new tab labeled with the child process name (e.g., "Findings").
+   - Tab contents: table of child records (title, status, owner, created_at), with an "Add {ChildProcessName}" button that routes to the child's create flow with `?parent_record_id=<id>` so the link is auto-written on save.
+   - Above the table: a **status rollup strip** — counts grouped by `process_records.status` (e.g., Open 4 · In Review 2 · Closed 7) using the child process's status set. No gating on parent close.
 
-Update the delete confirmation dialog in `ProcessConfigurationList.tsx` to show how many records will be deleted:
+**6. Record Details page (child side)**
+   - Existing "Linked records" section already surfaces relationships; add a "Parent: {ParentProcessName} → {parent record title}" line at the top of the record header when a `child_of` link exists, with a back-link to the parent record.
 
-```typescript
-// Before delete, fetch count
-const { count } = await supabase
-  .from('process_records')
-  .select('*', { count: 'exact', head: true })
-  .eq('process_id', processId);
+## Out of scope (explicit, per your answers)
 
-// Show in dialog:
-// "This will permanently delete X records and all associated data."
-```
+- No auto-creation of children when a parent record is created.
+- No gating: parent can be closed/completed regardless of child statuses.
+- No cascade-close or cascade-delete from parent to child records.
+- No multi-parent reuse (a process declares at most one parent).
+- No nesting beyond one level in this iteration (a child can technically declare its own parent in the DB, but UI for grandchildren is not built here — easy follow-up if needed).
 
----
+## Technical details
 
-### Summary of Changes
+Files expected to change:
+- New migration: add `parent_process_id` column + index on `processes`.
+- `src/pages/ProcessConfiguration.tsx` — parent-process selector.
+- `src/pages/ProcessConfigurationList.tsx` (Manage Processes) — child-of badge.
+- `src/components/AppSidebar.tsx` — grouped/indented rendering for parent→child processes.
+- `src/components/ProcessWizard.tsx` and `src/components/GuidedRecordCreation.tsx` — parent-record selector / pre-fill from `?parent_record_id`.
+- `src/pages/CreateProcess.tsx` (and wherever record-create is finalized) — write the `record_links` row on save when a parent record is bound.
+- `src/pages/RecordDetails.tsx` — new "Children" tabs per declared child process, status rollup strip, "Add {Child}" button, parent back-link header.
+- `src/components/LinkedRecordsSection.tsx` — minor: filter out `child_of` rows since they're shown in their dedicated tab/header.
+- Types regenerate after migration; downstream type fixes only.
 
-| File/Resource | Change |
-|---------------|--------|
-| Database Migration | Update 4 foreign key constraints to CASCADE/SET NULL |
-| `ProcessConfigurationList.tsx` | (Optional) Show record count in delete confirmation |
-
-### Impact
-- Existing processes with records can be deleted without errors
-- All related data (records, field values, workflow history, links) is cleaned up automatically
-- No orphaned data remains in the database
+No edge-function changes. No new tables. RLS on `processes` and `record_links` already covers the new column/link rows.
